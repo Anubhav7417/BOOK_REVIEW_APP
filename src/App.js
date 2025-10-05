@@ -510,7 +510,7 @@ class BookHubApp extends Component {
           </div>
           
           <div style={styles.footerBottom}>
-            <p>&copy; 2024 BookHub. All rights reserved.</p>
+            <p></p>
           </div>
         </footer>
       </div>
