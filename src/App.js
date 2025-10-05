@@ -352,7 +352,7 @@ class BookHubApp extends Component {
         <section style={styles.hero}>
           <div style={styles.heroContent}>
             <h1 style={styles.heroTitle}>
-              Read, Review, <span style={{color: '#2563eb'}}>Vibe</span> 📚✨
+              Review, <span style={{color: '#2563eb'}}>Vibe</span> 📚✨
             </h1>
             <p style={styles.heroSubtitle}>
               Join the lit reading community! Track your books, drop fire reviews, and connect with fellow bookworms. No cap, it's the best reading app out there! 🔥
