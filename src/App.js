@@ -369,15 +369,15 @@ class BookHubApp extends Component {
             
             <div style={styles.heroStats}>
               <div style={styles.stat}>
-                <span style={styles.statNumber}>1.2K+</span>
+                <span style={styles.statNumber}>0</span>
                 <span style={styles.statLabel}>Lit Reviews</span>
               </div>
               <div style={styles.stat}>
-                <span style={styles.statNumber}>567</span>
+                <span style={styles.statNumber}>0</span>
                 <span style={styles.statLabel}>Active Readers</span>
               </div>
               <div style={styles.stat}>
-                <span style={styles.statNumber}>89</span>
+                <span style={styles.statNumber}>0</span>
                 <span style={styles.statLabel}>New This Week</span>
               </div>
             </div>
