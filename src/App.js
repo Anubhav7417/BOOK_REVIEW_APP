@@ -243,6 +243,8 @@ class BookHubApp extends Component {
       bookDescription: {
         color: '#64748b',
         fontSize: '0.9rem',
+
+
         lineHeight: '1.5',
         display: '-webkit-box',
         WebkitLineClamp: 3,
@@ -388,7 +390,7 @@ class BookHubApp extends Component {
         <section id="discover" style={{...styles.section, backgroundColor: '#0f172a'}}>
           <div style={{maxWidth: '1200px', margin: '0 auto', padding: '0 1rem'}}>
             <div style={styles.sectionHeader}>
-              <h2 style={styles.sectionTitle}>Discover New Reads 🔍</h2>
+              <h2 style={styles.sectionTitle}>Discover New Reads </h2>
               <p style={styles.sectionSubtitle}>
                 Find your next obsession! Explore books across genres and vibes.
               </p>
