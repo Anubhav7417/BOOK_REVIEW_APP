@@ -382,10 +382,10 @@
         <section class="hero">
             <div class="hero-content">
                 <h1 class="hero-title">
-                    Review, <span style="color: #2563eb;">Vibe</span> 📚✨
+                    Review, <span style="color: #2563eb;"> And Vibe</span>
                 </h1>
                 <p class="hero-subtitle">
-                    Join the lit reading community! Track your books, drop fire reviews, and connect with fellow bookworms. No cap, it's the best reading app out there! 🔥
+                    Join the reading community! Track your books, drop fire reviews, and connect with fellow bookworms. No cap, it's the best reading app out there! 🔥
                 </p>
                 
                 <div class="search-container">
@@ -400,7 +400,7 @@
                 <div class="hero-stats">
                     <div class="stat">
                         <span class="stat-number">0</span>
-                        <span class="stat-label">Lit Reviews</span>
+                        <span class="stat-label">Books Reviews</span>
                     </div>
                     <div class="stat">
                         <span class="stat-number">0</span>
@@ -408,7 +408,7 @@
                     </div>
                     <div class="stat">
                         <span class="stat-number">0</span>
-                        <span class="stat-label">New This Week</span>
+                        <!--<span class="stat-label">New This Week</span>-->
                     </div>
                 </div>
             </div>
@@ -418,7 +418,7 @@
         <section id="discover" class="section">
             <div class="container">
                 <div class="section-header">
-                    <h2 class="section-title">Discover New Reads 🔍</h2>
+                    <h2 class="section-title">Discover New Reads</h2>
                     <p class="section-subtitle">
                         Find your next obsession! Explore books across genres and vibes.
                     </p>
