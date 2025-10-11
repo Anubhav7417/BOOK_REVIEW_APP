@@ -72,7 +72,7 @@ class BookHubApp extends Component {
         gap: '1rem'
       },
 
-      // Button styles
+
       btn: {
         padding: '0.75rem 1.5rem',
         border: 'none',
@@ -84,12 +84,13 @@ class BookHubApp extends Component {
         alignItems: 'center',
         gap: '0.5rem'
       },
+
+
       btnPrimary: {
         background: '#2563eb',
         color: 'white'
       },
 
-      // Hero section styles
       hero: {
         minHeight: '100vh',
         display: 'flex',
@@ -97,6 +98,8 @@ class BookHubApp extends Component {
         position: 'relative',
         overflow: 'hidden'
       },
+
+
       heroContent: {
         maxWidth: '1200px',
         margin: '0 auto',
@@ -105,6 +108,8 @@ class BookHubApp extends Component {
         zIndex: 2,
         maxWidth: '600px'
       },
+
+
       heroTitle: {
         fontSize: '3.5rem',
         fontWeight: '800',
@@ -115,17 +120,23 @@ class BookHubApp extends Component {
         backgroundClip: 'text',
         color: 'transparent'
       },
+
+
       heroSubtitle: {
         fontSize: '1.25rem',
         color: '#64748b',
         marginBottom: '2rem',
         lineHeight: '1.6'
       },
+
+
       searchContainer: {
         maxWidth: '500px',
         marginBottom: '3rem',
         position: 'relative'
       },
+
+
       searchBar: {
         width: '100%',
         padding: '1rem 1.5rem',
@@ -136,6 +147,8 @@ class BookHubApp extends Component {
         fontSize: '1rem',
         transition: 'all 0.3s'
       },
+
+
       searchIcon: {
         position: 'absolute',
         right: '1.5rem',
