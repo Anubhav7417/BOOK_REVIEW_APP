@@ -42,7 +42,7 @@ class BookHubApp extends Component {
               Review, <span className="hero-title-accent">Vibe</span>
             </h1>
             <p className="hero-subtitle">
-              Join the reading community! Track your books, drop fire reviews, and connect with fellow bookworms. No cap, it's the best reading app out there! 🔥
+              Join the reading community! Track your books, drop fire reviews, and connect with fellow bookworms. No cap, it's the best reading app out there! 
             </p>
             
             <div className="search-container">
