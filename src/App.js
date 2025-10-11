@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import './App.css';
-
+import logo from './logo.png';
 class BookHubApp extends Component {
   constructor(props) {
     super(props);
@@ -11,12 +11,11 @@ class BookHubApp extends Component {
   render() {
     return (
       <div className="app">
-        {/* Navigation */}
         <nav className="navbar">
           <div className="nav-content">
             <a href="#" className="logo">
               <div className="logo-icon">
-                <i className="fas fa-book"></i>
+                <img src={logo} alt="BookHub Logo" className="logo-image" />
               </div>
               BookHub
             </a>
@@ -68,6 +67,7 @@ class BookHubApp extends Component {
           </div>
         </section>
 
+
         <section id="discover" className="section discover-section">
           <div className="section-container">
             <div className="section-header">
@@ -85,7 +85,7 @@ class BookHubApp extends Component {
             </div>
 
             <div className="books-grid">
-              {/* Book Card 1 - */}
+              {/* Book Card 1  */}
               <div className="book-card">
                 <img 
                   src="https://m.media-amazon.com/images/I/71FREGXGA1L._UF1000,1000_QL80_.jpg" 
@@ -116,7 +116,7 @@ class BookHubApp extends Component {
                 </div>
               </div>
 
-              {/* Book Card 2 */}
+              {/* Book Card 2*/}
               <div className="book-card">
                 <img 
                   src="https://m.media-amazon.com/images/I/81gxiU-w93L.jpg" 
