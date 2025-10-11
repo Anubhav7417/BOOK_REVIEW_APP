@@ -1,16 +1,19 @@
 import React, { Component } from 'react';
 import './App.css';
 import logo from './logo.png';
+
 class BookHubApp extends Component {
   constructor(props) {
     super(props);
     this.state = {
+      // We'll add state in Part 2
     };
   }
 
   render() {
     return (
       <div className="app">
+        {/* Navigation */}
         <nav className="navbar">
           <div className="nav-content">
             <a href="#" className="logo">
@@ -32,6 +35,7 @@ class BookHubApp extends Component {
           </div>
         </nav>
 
+        {/* Hero Section */}
         <section className="hero">
           <div className="hero-content">
             <h1 className="hero-title">
@@ -67,7 +71,7 @@ class BookHubApp extends Component {
           </div>
         </section>
 
-
+        {/* Discover Section */}
         <section id="discover" className="section discover-section">
           <div className="section-container">
             <div className="section-header">
@@ -85,7 +89,7 @@ class BookHubApp extends Component {
             </div>
 
             <div className="books-grid">
-              {/* Book Card 1  */}
+              {/* Book Card 1 - The Ramayana */}
               <div className="book-card">
                 <img 
                   src="https://m.media-amazon.com/images/I/71FREGXGA1L._UF1000,1000_QL80_.jpg" 
@@ -116,7 +120,7 @@ class BookHubApp extends Component {
                 </div>
               </div>
 
-              {/* Book Card 2*/}
+              {/* Book Card 2 - The Mahabharata */}
               <div className="book-card">
                 <img 
                   src="https://m.media-amazon.com/images/I/81gxiU-w93L.jpg" 
@@ -147,7 +151,7 @@ class BookHubApp extends Component {
                 </div>
               </div>
 
-              {/* Book Card 3 */}
+              {/* Book Card 3 - To Kill a Mockingbird */}
               <div className="book-card">
                 <img 
                   src="https://i0.wp.com/www.printmag.com/wp-content/uploads/2017/07/2a34d8_a02f7a38d21c4666badc51e0e4973bd7mv2.jpg?resize=698%2C960&quality=89&ssl=1" 
@@ -181,6 +185,7 @@ class BookHubApp extends Component {
           </div>
         </section>
 
+        {/* Footer */}
         <footer className="footer">
           <div className="footer-content">
             <div className="footer-section">
