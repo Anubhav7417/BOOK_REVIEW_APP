@@ -40,11 +40,18 @@
 .logo-icon {
   width: 40px;
   height: 40px;
-  background: #2563eb;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
+  overflow: hidden;
+}
+
+.logo-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
 }
 
 .nav-links {
@@ -422,4 +429,4 @@
     flex-direction: column;
     align-items: center;
   }
-  }
+}
