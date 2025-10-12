@@ -25,6 +25,7 @@ class BookHubApp extends Component {
             
             <div className="nav-links">
               <a href="#discover" className="nav-link">Discover</a>
+              <a href="#Reviews" className="nav-link">Reviews</a>
             </div>
             
             <div className="user-actions">
