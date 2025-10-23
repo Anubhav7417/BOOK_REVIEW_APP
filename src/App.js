@@ -946,7 +946,7 @@ class BookHubApp extends Component {
       const newLibrary = [...userLibrary, bookToAdd];
       this.setState({ userLibrary: newLibrary });
       localStorage.setItem('user_library', JSON.stringify(newLibrary));
-      this.showToast(`Added "${book.title}" to your library! 📚`, 'success');
+      this.showToast(`Added "${book.title}" to your library! `, 'success');
     } else {
       this.showToast('Book is already in your library', 'warning');
     }
@@ -1177,7 +1177,7 @@ class BookHubApp extends Component {
     return trendingBooks.map(book => (
       <div key={book.id} className="bg-dark rounded-2xl p-6 card-hover relative">
         <div className="absolute top-4 right-4 trending-badge">
-          Trending 🔥
+          Trending 
         </div>
         <div className="flex flex-col items-center text-center">
           <img src={book.cover} alt={book.title} className="book-cover mb-4" />
@@ -1324,7 +1324,7 @@ class BookHubApp extends Component {
     const result = this.loginUser(loginData.username, loginData.password);
     
     if (result.success) {
-      this.showToast('Welcome back! 🎉', 'success');
+      this.showToast('Welcome back!', 'success');
     } else {
       this.showToast(result.message, 'error');
     }
@@ -1360,7 +1360,7 @@ class BookHubApp extends Component {
     const result = this.registerUser(registerData);
     
     if (result.success) {
-      this.showToast('Account created successfully! 🎉', 'success');
+      this.showToast('Account created successfully!', 'success');
     } else {
       this.showToast(result.message, 'error');
     }
@@ -1375,7 +1375,7 @@ class BookHubApp extends Component {
     this.setState({ currentUser: null });
     localStorage.removeItem('bookhub_current_user');
     this.clearSessionTimer();
-    this.showToast('Logged out successfully! 👋', 'success');
+    this.showToast('Logged out successfully!', 'success');
   }
 
   handleSearch = (searchTerm) => {
@@ -1531,7 +1531,7 @@ class BookHubApp extends Component {
                 <a href="#" className="text-sm text-primary-400 hover:underline">Forgot password?</a>
               </div>
               <button type="submit" className="w-full py-3 bg-primary-600 text-white font-semibold rounded-lg hover:bg-primary-700 transition-all duration-300 transform hover:scale-105">
-                Let's Go! 🚀
+                Let's Go!!!
               </button>
               
               <div className="relative my-4">
@@ -1600,7 +1600,7 @@ class BookHubApp extends Component {
                 />
               </div>
               <button type="submit" className="w-full py-3 bg-primary-600 text-white font-semibold rounded-lg hover:bg-primary-700 transition-all duration-300 transform hover:scale-105">
-                Admin Login 🔐
+                Admin Login 
               </button>
             </form>
           )}
@@ -1608,7 +1608,7 @@ class BookHubApp extends Component {
           {activeForm === 'phone-login' && (
             <form onSubmit={this.handlePhoneSubmit} className="space-y-4">
               <div>
-                <label className="block text-sm font-semibold mb-2">Phone Number 📱</label>
+                <label className="block text-sm font-semibold mb-2">Phone No.</label>
                 <div className="phone-input flex">
                   <select 
                     value={phoneData.countryCode}
@@ -1633,7 +1633,7 @@ class BookHubApp extends Component {
               
               {phoneData.otpSent && (
                 <div className="animate-fade-in-up">
-                  <label className="block text-sm font-semibold mb-2">Verification Code 🔢</label>
+                  <label className="block text-sm font-semibold mb-2">Verification Code</label>
                   <input 
                     type="text" 
                     value={phoneData.otpCode}
@@ -1652,7 +1652,7 @@ class BookHubApp extends Component {
                 type="submit" 
                 className="w-full py-3 bg-primary-600 text-white font-semibold rounded-lg hover:bg-primary-700 transition-all duration-300 transform hover:scale-105"
               >
-                {phoneData.otpSent ? 'Verify Code ✅' : 'Send Verification Code 📲'}
+                {phoneData.otpSent ? 'Verify Code' : 'Send Verification Code 📲'}
               </button>
             </form>
           )}
@@ -1660,7 +1660,7 @@ class BookHubApp extends Component {
           {activeForm === 'register' && (
             <form onSubmit={this.handleRegistration} className="space-y-4">
               <div>
-                <label className="block text-sm font-semibold mb-2">Full Name 👤</label>
+                <label className="block text-sm font-semibold mb-2">Full Name</label>
                 <input 
                   type="text" 
                   value={registerData.name}
@@ -1671,7 +1671,7 @@ class BookHubApp extends Component {
                 />
               </div>
               <div>
-                <label className="block text-sm font-semibold mb-2">Username 🆔</label>
+                <label className="block text-sm font-semibold mb-2">Username</label>
                 <input 
                   type="text" 
                   value={registerData.username}
@@ -1682,7 +1682,7 @@ class BookHubApp extends Component {
                 />
               </div>
               <div>
-                <label className="block text-sm font-semibold mb-2">Email 📧</label>
+                <label className="block text-sm font-semibold mb-2">Email</label>
                 <input 
                   type="email" 
                   value={registerData.email}
@@ -1693,7 +1693,7 @@ class BookHubApp extends Component {
                 />
               </div>
               <div>
-                <label className="block text-sm font-semibold mb-2">Password 🔒</label>
+                <label className="block text-sm font-semibold mb-2">Password</label>
                 <input 
                   type="password" 
                   value={registerData.password}
@@ -1704,7 +1704,7 @@ class BookHubApp extends Component {
                 />
               </div>
               <div>
-                <label className="block text-sm font-semibold mb-2">Confirm Password 🔒</label>
+                <label className="block text-sm font-semibold mb-2">Confirm Password</label>
                 <input 
                   type="password" 
                   value={registerData.confirmPassword}
@@ -1715,7 +1715,7 @@ class BookHubApp extends Component {
                 />
               </div>
               <button type="submit" className="w-full py-3 bg-primary-600 text-white font-semibold rounded-lg hover:bg-primary-700 transition-all duration-300 transform hover:scale-105">
-                Create Account 🎉
+                Create Account 
               </button>
             </form>
           )}
@@ -1762,12 +1762,12 @@ class BookHubApp extends Component {
               </a>
               
               <div className="hidden md:flex space-x-8">
-                <a href="#home" className="nav-link text-secondary hover:text-primary-400 transition-colors duration-300 font-medium">Home 🏠</a>
-                <a href="#library" className="nav-link text-secondary hover:text-primary-400 transition-colors duration-300 font-medium">My Library 📖</a>
-                <a href="#discover" className="nav-link text-secondary hover:text-primary-400 transition-colors duration-300 font-medium">Discover 🔍</a>
-                <a href="#reviews" className="nav-link text-secondary hover:text-primary-400 transition-colors duration-300 font-medium">Reviews 💬</a>
-                <a href="#stats" className="nav-link text-secondary hover:text-primary-400 transition-colors duration-300 font-medium">Stats 📊</a>
-                <a href="#trending" className="nav-link text-secondary hover:text-primary-400 transition-colors duration-300 font-medium">Trending 🔥</a>
+                <a href="#home" className="nav-link text-secondary hover:text-primary-400 transition-colors duration-300 font-medium">Home</a>
+                <a href="#library" className="nav-link text-secondary hover:text-primary-400 transition-colors duration-300 font-medium">My Library</a>
+                <a href="#discover" className="nav-link text-secondary hover:text-primary-400 transition-colors duration-300 font-medium">Discover</a>
+                <a href="#reviews" className="nav-link text-secondary hover:text-primary-400 transition-colors duration-300 font-medium">Reviews</a>
+                <a href="#stats" className="nav-link text-secondary hover:text-primary-400 transition-colors duration-300 font-medium">Stats</a>
+                <a href="#trending" className="nav-link text-secondary hover:text-primary-400 transition-colors duration-300 font-medium">Trending</a>
               </div>
 
               <div className="flex items-center space-x-4">
@@ -1809,7 +1809,7 @@ class BookHubApp extends Component {
                     Read, Review, <span className="gradient-text">Vibe</span>
                   </h1>
                   <p className="text-lg text-secondary leading-relaxed max-w-2xl">
-                    Join the lit reading community! Track your books, drop fire reviews, and connect with fellow bookworms. No cap, it's the best reading app out there! 🔥
+                    Join the lit reading community! Track your books, drop fire reviews, and connect with fellow bookworms. No cap, it's the best reading app out there!!!
                   </p>
                 </div>
 
@@ -1877,7 +1877,7 @@ class BookHubApp extends Component {
         <section id="discover" className="py-20 relative z-10">
           <div className="container mx-auto px-6">
             <div className="text-center mb-16">
-              <h2 className="text-4xl font-bold mb-4 gradient-text">Discover New Reads 🔍</h2>
+              <h2 className="text-4xl font-bold mb-4 gradient-text">Discover New Reads </h2>
               <p className="text-lg text-secondary max-w-2xl mx-auto">
                 Find your next obsession! Explore books across genres and vibes.
               </p>
