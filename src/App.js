@@ -621,40 +621,6 @@ class BookHubApp extends Component {
       container.appendChild(toast);
       
       setTimeout(() => toast.classList.add('show'), 100);
-      
-      toast.querySelector('button').addEventListener('click', () => {
-        toast.classList.remove('show');
-        setTimeout(() => toast.remove(), 300);
-      });
-      
-      setTimeout(() => {
-        toast.classList.remove('show');
-        setTimeout(() => toast.remove(), 300);
-      }, 5000);
-    }
-  }
-
-  // Book Management
-  loadSampleData = () => {
-    const { userLibrary } = this.state;
-    if (userLibrary.length === 0) {
-      const sampleLibrary = [{
-        id: '1',
-        title: 'The Great Gatsby',
-        author: 'F. Scott Fitzgerald',
-        cover: 'https://via.placeholder.com/150x200/2563eb/ffffff?text=Gatsby',
-        pages: 180,
-        currentPage: 0,
-        genre: 'Fiction',
-        status: 'to-read',
-        addedDate: new Date().toISOString()
-      }];
-      
-      this.setState({ userLibrary: sampleLibrary });
-      localStorage.setItem('user_library', JSON.stringify(sampleLibrary));
-    }
-  }
-
   addBookToLibrary = (book) => {
     const { currentUser, userLibrary } = this.state;
     
