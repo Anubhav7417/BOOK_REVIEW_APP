@@ -230,7 +230,7 @@ class BookHubApp extends Component {
         userName: 'MythologyLover',
         userAvatar: 'https://ui-avatars.com/api/?name=Priya&background=06b6d4&color=fff',
         rating: 5,
-        title: 'Epic of Epics! 🔥',
+        title: 'Epic of Epics!!!',
         content: 'The Mahabharata is everything - philosophy, politics, war, relationships. The Bhagavad Gita alone is worth reading this massive epic for. Life-changing!',
         date: '2024-02-20',
         likes: 67,
@@ -1948,55 +1948,55 @@ class BookHubApp extends Component {
               </div>
             </div>
 
-            <div className="bg-dark rounded-2xl p-8 card-hover max-w-4xl mx-auto">
-              <h3 className="text-2xl font-semibold mb-6 text-center gradient-text">2024 Reading Goals</h3>
-              <div className="space-y-6">
-                <div>
-                  <div className="flex justify-between mb-2">
-                    <span className="font-medium">Books to Read</span>
-                    <span className="text-primary-400">8/20</span>
-                  </div>
-                  <div className="progress-bar">
-                    <div className="progress-fill" style={{ width: '40%' }}></div>
-                  </div>
-                </div>
-                <div>
-                  <div className="flex justify-between mb-2">
-                    <span className="font-medium">Pages to Read</span>
-                    <span className="text-accent">1,234/5,000</span>
-                  </div>
-                  <div className="progress-bar">
-                    <div className="progress-fill" style={{ width: '25%' }}></div>
-                  </div>
-                </div>
-                <div>
-                  <div className="flex justify-between mb-2">
-                    <span className="font-medium">New Genres</span>
-                    <span className="text-success">3/5</span>
-                  </div>
-                  <div className="progress-bar">
-                    <div className="progress-fill" style={{ width: '60%' }}></div>
-                  </div>
-                </div>
+           // <div className="bg-dark rounded-2xl p-8 card-hover max-w-4xl mx-auto">
+             // <h3 className="text-2xl font-semibold mb-6 text-center gradient-text">2024 Reading Goals</h3>
+              //<div className="space-y-6">
+                //<div>
+                  //<div className="flex justify-between mb-2">
+                    //<span className="font-medium">Books to Read</span>
+                    //<span className="text-primary-400">8/20</span>
+                  //</div>
+                 // <div className="progress-bar">
+                   // <div className="progress-fill" style={{ width: '40%' }}></div>
+                  //</div>
+                //</div>
+                //<div>
+                  //<div className="flex justify-between mb-2">
+                    //<span className="font-medium">Pages to Read</span>
+                    //<span className="text-accent">1,234/5,000</span>
+                  //</div>
+                  //<div className="progress-bar">
+                    //<div className="progress-fill" style={{ width: '25%' }}></div>
+                  //</div>
+                //</div>
+                //<div>
+                  //<div className="flex justify-between mb-2">
+                   // <span className="font-medium">New Genres</span>
+                   // <span className="text-success">3/5</span>
+                 // </div>
+                 // <div className="progress-bar">
+                   // <div className="progress-fill" style={{ width: '60%' }}></div>
+                 // </div>
+               // </div>
               </div>
             </div>
           </div>
         </section>
 
-        <section id="trending" className="py-20 bg-card relative z-10">
-          <div className="container mx-auto px-6">
-            <div className="text-center mb-16">
-              <h2 className="text-4xl font-bold mb-4 gradient-text">Trendings</h2>
-              <p className="text-lg text-secondary max-w-2xl mx-auto">
-                The books everyone's talking about right now! Don't miss out on the hype.
-              </p>
-            </div>
+        //<section id="trending" className="py-20 bg-card relative z-10">
+         // <div className="container mx-auto px-6">
+           // <div className="text-center mb-16">
+             // <h2 className="text-4xl font-bold mb-4 gradient-text">Trendings</h2>
+              //<p className="text-lg text-secondary max-w-2xl mx-auto">
+               // The books everyone's talking about right now! Don't miss out on the hype.
+             // </p>
+           // </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {this.renderTrendingBooks()}
-            </div>
-          </div>
-        </section>
+           // <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+             // {this.renderTrendingBooks()}
+           // </div>
+         // </div>
+        //</section>
 
         <div className="fab">
           <i className="fas fa-plus text-xl"></i>
