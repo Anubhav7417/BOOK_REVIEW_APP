@@ -119,22 +119,6 @@ class BookHubApp extends Component {
         language: 'English'
       }
     ];
-
-    this.sampleReviews = [
-      {
-        id: '1',
-        bookId: '1',
-        userId: 'user123',
-        userName: 'BookwormRavi',
-        userAvatar: 'https://ui-avatars.com/api/?name=Ravi&background=2563eb&color=fff',
-        rating: 5,
-        title: 'Timeless Epic! 🙏',
-        content: 'The Ramayana is not just a story, it\'s a way of life. The characters, the values, the teachings - everything about this epic is profound.',
-        date: '2024-01-15',
-        likes: 45,
-        memeReview: 'When you realize Ramayana has more plot twists than your favorite Netflix show 😂'
-      }
-    ];
   }
 
   componentDidMount() {
