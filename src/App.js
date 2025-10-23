@@ -1462,7 +1462,7 @@ class BookHubApp extends Component {
             <i className="fas fa-times"></i>
           </button>
 
-          <h3 className="text-2xl font-semibold mb-6 text-center gradient-text">Join BookHub 📚</h3>
+          <h3 className="text-2xl font-semibold mb-6 text-center gradient-text">Join BookHub</h3>
           
           {(activeForm === 'user-login' || activeForm === 'admin-login') && (
             <div className="flex border-b border-gray-600 mb-6">
@@ -1667,7 +1667,7 @@ class BookHubApp extends Component {
                   onChange={(e) => this.handleInputChange('registerData', 'name', e.target.value)}
                   required 
                   className="w-full px-4 py-3 bg-dark border border-card rounded-lg focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 transition-all duration-300" 
-                  placeholder="Enter your full name" 
+                  placeholder="Enter your Lucky Name" 
                 />
               </div>
               <div>
@@ -1758,7 +1758,7 @@ class BookHubApp extends Component {
                 <div className="h-10 w-10 rounded-full mr-2 bg-primary-600 flex items-center justify-center">
                   <i className="fas fa-book text-white"></i>
                 </div>
-                <span className="text-xl font-bold gradient-text">BookHub 📚</span>
+                <span className="text-xl font-bold gradient-text">BookHub</span>
               </a>
               
               <div className="hidden md:flex space-x-8">
@@ -1806,7 +1806,7 @@ class BookHubApp extends Component {
               <div className="space-y-8 animate-fade-in-up">
                 <div className="space-y-6">
                   <h1 className="text-5xl lg:text-6xl font-bold leading-tight">
-                    Read, Review, <span className="gradient-text">Vibe</span> 📚✨
+                    Read, Review, <span className="gradient-text">Vibe</span>
                   </h1>
                   <p className="text-lg text-secondary leading-relaxed max-w-2xl">
                     Join the lit reading community! Track your books, drop fire reviews, and connect with fellow bookworms. No cap, it's the best reading app out there! 🔥
@@ -1847,9 +1847,9 @@ class BookHubApp extends Component {
         <section id="library" className="py-20 bg-card relative z-10">
           <div className="container mx-auto px-6">
             <div className="text-center mb-16">
-              <h2 className="text-4xl font-bold mb-4 gradient-text">My Library 📚</h2>
+              <h2 className="text-4xl font-bold mb-4 gradient-text">My Library </h2>
               <p className="text-lg text-secondary max-w-2xl mx-auto">
-                Your personal book collection - organized and lit! 🔥
+                Your personal book collection - organized and lit! 
               </p>
             </div>
 
@@ -1908,9 +1908,9 @@ class BookHubApp extends Component {
         <section id="reviews" className="py-20 bg-card relative z-10">
           <div className="container mx-auto px-6">
             <div className="text-center mb-16">
-              <h2 className="text-4xl font-bold mb-4 gradient-text">Community Reviews 💬</h2>
+              <h2 className="text-4xl font-bold mb-4 gradient-text">Community Reviews </h2>
               <p className="text-lg text-secondary max-w-2xl mx-auto">
-                See what the community is saying about their latest reads! Spill the tea ☕
+                See what the community is saying about their latest reads!!!
               </p>
             </div>
 
@@ -1923,9 +1923,9 @@ class BookHubApp extends Component {
         <section id="stats" className="py-20 relative z-10">
           <div className="container mx-auto px-6">
             <div className="text-center mb-16">
-              <h2 className="text-4xl font-bold mb-4 gradient-text">Reading Stats 📊</h2>
+              <h2 className="text-4xl font-bold mb-4 gradient-text">Reading Stats</h2>
               <p className="text-lg text-secondary max-w-2xl mx-auto">
-                Track your reading journey and flex your stats! 💪
+                Track your reading journey and flex your stats!!!
               </p>
             </div>
 
@@ -1949,7 +1949,7 @@ class BookHubApp extends Component {
             </div>
 
             <div className="bg-dark rounded-2xl p-8 card-hover max-w-4xl mx-auto">
-              <h3 className="text-2xl font-semibold mb-6 text-center gradient-text">2024 Reading Goals 🎯</h3>
+              <h3 className="text-2xl font-semibold mb-6 text-center gradient-text">2024 Reading Goals</h3>
               <div className="space-y-6">
                 <div>
                   <div className="flex justify-between mb-2">
@@ -1986,7 +1986,7 @@ class BookHubApp extends Component {
         <section id="trending" className="py-20 bg-card relative z-10">
           <div className="container mx-auto px-6">
             <div className="text-center mb-16">
-              <h2 className="text-4xl font-bold mb-4 gradient-text">Trending Now 🔥</h2>
+              <h2 className="text-4xl font-bold mb-4 gradient-text">Trendings</h2>
               <p className="text-lg text-secondary max-w-2xl mx-auto">
                 The books everyone's talking about right now! Don't miss out on the hype.
               </p>
