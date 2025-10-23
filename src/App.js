@@ -67,13 +67,6 @@ class BookHubApp extends Component {
       }
     };
 
-    // ADMIN CREDENTIALS - CLEARLY VISIBLE
-    this.ADMIN_CREDENTIALS = {
-      USERNAME: 'Neurix',
-      PASSWORD: 'Neurix@7217secure',
-      SECURITY_CODE: 'PasswordHighzacked'
-    };
-
     this.sampleBooks = [
       {
         id: '1',
@@ -339,9 +332,9 @@ class BookHubApp extends Component {
     if (admins.length === 0) {
       const newAdmins = [...admins, {
         id: 1,
-        username: this.ADMIN_CREDENTIALS.USERNAME,
-        password: this.hashPassword(this.ADMIN_CREDENTIALS.PASSWORD),
-        securityCode: this.ADMIN_CREDENTIALS.SECURITY_CODE,
+        username: 'Neurix',
+        password: this.hashPassword('Neurix@7217secure'),
+        securityCode: 'PasswordHighzacked',
         createdAt: new Date().toISOString(),
         lastLogin: null,
         isActive: true,
@@ -349,13 +342,6 @@ class BookHubApp extends Component {
       }];
       this.setState({ admins: newAdmins });
       localStorage.setItem('bookhub_admins', JSON.stringify(newAdmins));
-      
-      // Log admin credentials for easy reference (remove in production)
-      console.log('=== ADMIN CREDENTIALS ===');
-      console.log('Username:', this.ADMIN_CREDENTIALS.USERNAME);
-      console.log('Password:', this.ADMIN_CREDENTIALS.PASSWORD);
-      console.log('Security Code:', this.ADMIN_CREDENTIALS.SECURITY_CODE);
-      console.log('======================');
     }
   }
 
@@ -2385,7 +2371,7 @@ class BookHubApp extends Component {
                 <span className="text-secondary">
                   Found {this.state.searchResults.length} books
                 </span>
-            </div>
+              </div>
             )}
 
             <div className="flex flex-wrap gap-3 mb-8 justify-center">
