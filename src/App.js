@@ -10,21 +10,14 @@ class BookHubApp extends Component {
       currentUser: JSON.parse(localStorage.getItem('bookhub_current_user')) || null,
       userLibrary: JSON.parse(localStorage.getItem('user_library')) || [],
       userReviews: JSON.parse(localStorage.getItem('user_reviews')) || [],
-      otpData: JSON.parse(localStorage.getItem('otp_data')) || {},
       showLoginModal: false,
       showBookModal: false,
       activeBook: null,
       activeTab: 'user',
       activeForm: 'user-login',
-      otpTimer: null,
       searchTerm: '',
       activeGenre: 'all',
-      phoneData: {
-        countryCode: '+91',
-        phoneNumber: '',
-        otpCode: '',
-        otpSent: false
-      },
+      isMobileMenuOpen: false,
       registerData: {
         name: '',
         username: '',
@@ -62,6 +55,7 @@ class BookHubApp extends Component {
         title: 'The Ramayana',
         author: 'Valmiki',
         cover: 'https://via.placeholder.com/150x200/2563eb/ffffff?text=Ramayana',
+        pdfUrl: '/pdfs/ramayana.pdf',
         pages: 500,
         genre: 'indian',
         description: 'The Ramayana is an ancient Indian epic which narrates the struggle of the divine prince Rama to rescue his wife Sita from the demon king Ravana.',
@@ -77,10 +71,11 @@ class BookHubApp extends Component {
         title: 'The Mahabharata',
         author: 'Vyasa',
         cover: 'https://via.placeholder.com/150x200/06b6d4/ffffff?text=Mahabharata',
+        pdfUrl: '/pdfs/mahabharata.pdf',
         pages: 1200,
         genre: 'indian',
         description: 'The Mahabharata is one of the two major Sanskrit epics of ancient India, detailing the legendary Kurukshetra War fought between the Pandavas and the Kauravas—cousins from the Kuru dynasty. Beyond the war, the epic explores profound themes of duty (dharma), justice, family loyalty, and the consequences of human actions, making it a cornerstone of Indian literature and philosophy.',
-        contentPreview: 'The epic begins with King Shantanu of Hastinapura, who falls in love with the river goddess Ganga. Their union leads to the birth of Bhishma, a key figure in the unfolding saga. As generations pass, rivalries grow between Shantanu’s descendants—the Pandavas and the Kauravas—eventually culminating in a great war that tests the values of truth, honor, and destiny.',
+        contentPreview: 'The epic begins with King Shantanu of Hastinapura, who falls in love with the river goddess Ganga. Their union leads to the birth of Bhishma, a key figure in the unfolding saga. As generations pass, rivalries grow between Shantanu\'s descendants—the Pandavas and the Kauravas—eventually culminating in a great war that tests the values of truth, honor, and destiny.',
         rating: 4.8,
         reviews: 76,
         trending: true,
@@ -92,6 +87,7 @@ class BookHubApp extends Component {
         title: 'To Kill a Mockingbird',
         author: 'Harper Lee',
         cover: 'https://via.placeholder.com/150x200/10b981/ffffff?text=Mockingbird',
+        pdfUrl: '/pdfs/mockingbird.pdf',
         pages: 281,
         genre: 'fiction',
         description: 'A gripping, heart-wrenching tale of race and identity in the American South during the 1930s.',
@@ -107,6 +103,7 @@ class BookHubApp extends Component {
         title: '1984',
         author: 'George Orwell',
         cover: 'https://via.placeholder.com/150x200/f59e0b/ffffff?text=1984',
+        pdfUrl: '/pdfs/1984.pdf',
         pages: 328,
         genre: 'fiction',
         description: 'A dystopian social science fiction novel and cautionary tale about the dangers of totalitarianism.',
@@ -122,6 +119,7 @@ class BookHubApp extends Component {
         title: 'Pride and Prejudice',
         author: 'Jane Austen',
         cover: 'https://via.placeholder.com/150x200/ef4444/ffffff?text=P%26P',
+        pdfUrl: '/pdfs/pride-prejudice.pdf',
         pages: 432,
         genre: 'classics',
         description: 'A romantic novel of manners that depicts the emotional development of protagonist Elizabeth Bennet.',
@@ -176,7 +174,6 @@ class BookHubApp extends Component {
 
   componentWillUnmount() {
     this.clearSessionTimer();
-    this.clearOTPTimer();
   }
 
   // Enhanced Security Methods
@@ -489,206 +486,6 @@ class BookHubApp extends Component {
     return { success: true, user: currentUser };
   }
 
-  // Enhanced Phone Authentication
-  generateOTP = () => {
-    return Math.floor(100000 + Math.random() * 900000).toString();
-  }
-
-  validatePhoneNumber = (phoneNumber) => {
-    const phoneRegex = /^\+?[1-9]\d{1,14}$/;
-    return phoneRegex.test(phoneNumber.replace(/\s/g, ''));
-  }
-
-  sendOTP = (phoneNumber) => {
-    if (!this.validatePhoneNumber(phoneNumber)) {
-      return { success: false, message: 'Invalid phone number format' };
-    }
-
-    const otpRequests = JSON.parse(localStorage.getItem('otp_requests') || '{}');
-    const now = Date.now();
-    const userRequests = otpRequests[phoneNumber] || [];
-    const recentRequests = userRequests.filter(time => now - time < 3600000);
-    
-    if (recentRequests.length >= 5) {
-      return { success: false, message: 'Too many OTP requests. Please try again later.' };
-    }
-
-    const otp = this.generateOTP();
-    const expiresAt = Date.now() + 5 * 60 * 1000;
-
-    const newOtpData = {
-      ...this.state.otpData,
-      [phoneNumber]: {
-        otp: otp,
-        expiresAt: expiresAt,
-        attempts: 0,
-        created: now
-      }
-    };
-
-    otpRequests[phoneNumber] = [...recentRequests, now];
-    localStorage.setItem('otp_requests', JSON.stringify(otpRequests));
-
-    this.setState({ otpData: newOtpData });
-    localStorage.setItem('otp_data', JSON.stringify(newOtpData));
-
-    console.log(`SECURE OTP for ${phoneNumber}: ${otp}`);
-    
-    this.startOTPTimer();
-
-    return { success: true, message: `📱 Verification code sent to ${phoneNumber}` };
-  }
-
-  verifyOTP = (phoneNumber, enteredOTP) => {
-    const storedData = this.state.otpData[phoneNumber];
-    
-    if (!storedData) {
-      return { success: false, message: 'No OTP request found' };
-    }
-
-    if (Date.now() > storedData.expiresAt) {
-      const newOtpData = { ...this.state.otpData };
-      delete newOtpData[phoneNumber];
-      this.setState({ otpData: newOtpData });
-      localStorage.setItem('otp_data', JSON.stringify(newOtpData));
-      return { success: false, message: 'OTP expired. Please request a new one.' };
-    }
-
-    if (storedData.attempts >= 3) {
-      return { success: false, message: 'Too many attempts. Please request a new OTP.' };
-    }
-
-    if (storedData.otp === enteredOTP) {
-      const newOtpData = { ...this.state.otpData };
-      delete newOtpData[phoneNumber];
-      this.setState({ otpData: newOtpData });
-      localStorage.setItem('otp_data', JSON.stringify(newOtpData));
-      this.clearOTPTimer();
-      return { success: true, message: 'Phone verified successfully! ✅' };
-    } else {
-      const newOtpData = {
-        ...this.state.otpData,
-        [phoneNumber]: {
-          ...storedData,
-          attempts: storedData.attempts + 1
-        }
-      };
-      this.setState({ otpData: newOtpData });
-      localStorage.setItem('otp_data', JSON.stringify(newOtpData));
-      const remainingAttempts = 3 - (storedData.attempts + 1);
-      return { 
-        success: false, 
-        message: `Invalid OTP. ${remainingAttempts} attempts remaining.` 
-      };
-    }
-  }
-
-  startOTPTimer = () => {
-    let timeLeft = 300;
-    this.updateOTPTimerDisplay(timeLeft);
-
-    const otpTimer = setInterval(() => {
-      timeLeft--;
-      this.updateOTPTimerDisplay(timeLeft);
-
-      if (timeLeft <= 0) {
-        this.clearOTPTimer();
-        this.showToast('OTP expired. Please request a new one.', 'warning');
-      }
-    }, 1000);
-
-    this.setState({ otpTimer });
-  }
-
-  updateOTPTimerDisplay = (seconds) => {
-    const minutes = Math.floor(seconds / 60);
-    const remainingSeconds = seconds % 60;
-    const display = `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
-    
-    const countdownElement = document.getElementById('countdown');
-    if (countdownElement) {
-      countdownElement.textContent = display;
-    }
-  }
-
-  clearOTPTimer = () => {
-    const { otpTimer } = this.state;
-    if (otpTimer) {
-      clearInterval(otpTimer);
-      this.setState({ otpTimer: null });
-    }
-  }
-
-  handlePhoneLogin = async () => {
-    const { phoneData } = this.state;
-    const fullPhoneNumber = phoneData.countryCode + phoneData.phoneNumber;
-
-    if (!phoneData.otpSent) {
-      const result = this.sendOTP(fullPhoneNumber);
-      if (result.success) {
-        this.showToast(result.message, 'success');
-        this.setState({
-          phoneData: {
-            ...phoneData,
-            otpSent: true
-          }
-        });
-      } else {
-        this.showToast(result.message, 'error');
-      }
-    } else {
-      const result = this.verifyOTP(fullPhoneNumber, phoneData.otpCode);
-      if (result.success) {
-        this.showToast(result.message, 'success');
-        this.handlePhoneUserLogin(fullPhoneNumber);
-      } else {
-        this.showToast(result.message, 'error');
-      }
-    }
-  }
-
-  handlePhoneUserLogin = (phoneNumber) => {
-    let user = this.state.users.find(u => u.phone === phoneNumber);
-
-    if (!user) {
-      user = {
-        id: 'phone_' + Date.now(),
-        name: `User_${phoneNumber.substring(phoneNumber.length - 4)}`,
-        username: `user_${Date.now()}`,
-        phone: phoneNumber,
-        password: null,
-        avatar: `https://ui-avatars.com/api/?name=User&background=2563eb&color=fff`,
-        createdAt: new Date().toISOString(),
-        lastLogin: new Date().toISOString(),
-        isActive: true,
-        isSocial: true,
-        readingStats: {
-          booksRead: 0,
-          pagesRead: 0,
-          readingTime: 0,
-          favoriteGenres: []
-        }
-      };
-      const newUsers = [...this.state.users, user];
-      this.setState({ 
-        users: newUsers,
-        currentUser: { ...user, isAdmin: false },
-        showLoginModal: false,
-        phoneData: { countryCode: '+91', phoneNumber: '', otpCode: '', otpSent: false }
-      });
-      localStorage.setItem('bookhub_users', JSON.stringify(newUsers));
-    } else {
-      this.setState({ 
-        currentUser: { ...user, isAdmin: false },
-        showLoginModal: false,
-        phoneData: { countryCode: '+91', phoneNumber: '', otpCode: '', otpSent: false }
-      });
-    }
-
-    localStorage.setItem('bookhub_current_user', JSON.stringify({ ...user, isAdmin: false }));
-    this.showToast('Phone verification successful! 📱', 'success');
-  }
-
   // Enhanced User Registration
   registerUser = (userData) => {
     const { users } = this.state;
@@ -760,10 +557,8 @@ class BookHubApp extends Component {
 
   hideLoginModal = () => {
     this.setState({ 
-      showLoginModal: false,
-      phoneData: { countryCode: '+91', phoneNumber: '', otpCode: '', otpSent: false }
+      showLoginModal: false
     });
-    this.clearOTPTimer();
   }
 
   switchLoginTab = (tab) => {
@@ -771,10 +566,6 @@ class BookHubApp extends Component {
       activeTab: tab,
       activeForm: tab === 'user' ? 'user-login' : 'admin-login'
     });
-  }
-
-  showPhoneLogin = () => {
-    this.setState({ activeForm: 'phone-login' });
   }
 
   showRegistration = () => {
@@ -786,6 +577,17 @@ class BookHubApp extends Component {
       activeTab: 'user',
       activeForm: 'user-login'
     });
+  }
+
+  // Mobile Menu Toggle
+  toggleMobileMenu = () => {
+    this.setState(prevState => ({
+      isMobileMenuOpen: !prevState.isMobileMenuOpen
+    }));
+  }
+
+  closeMobileMenu = () => {
+    this.setState({ isMobileMenuOpen: false });
   }
 
   // Input Handlers
@@ -874,6 +676,16 @@ class BookHubApp extends Component {
       this.showToast(`Added "${book.title}" to your library! `, 'success');
     } else {
       this.showToast('Book is already in your library', 'warning');
+    }
+  }
+
+  // PDF Preview Handler
+  handlePDFPreview = (pdfUrl) => {
+    if (pdfUrl) {
+      window.open(pdfUrl, '_blank');
+      this.showToast('Opening PDF preview...', 'info');
+    } else {
+      this.showToast('PDF not available for this book', 'warning');
     }
   }
 
@@ -1045,10 +857,13 @@ class BookHubApp extends Component {
               <i className="fas fa-share"></i>
               Share
             </button>
-            {activeBook.contentPreview && activeBook.contentPreview !== 'No preview available' && (
-              <button className="px-6 py-3 border border-success text-success font-semibold rounded-lg hover:bg-success hover:text-white transition-all duration-300 flex items-center gap-2">
-                <i className="fas fa-eye"></i>
-                Preview
+            {activeBook.pdfUrl && (
+              <button 
+                onClick={() => this.handlePDFPreview(activeBook.pdfUrl)}
+                className="px-6 py-3 border border-success text-success font-semibold rounded-lg hover:bg-success hover:text-white transition-all duration-300 flex items-center gap-2"
+              >
+                <i className="fas fa-file-pdf"></i>
+                Read PDF
               </button>
             )}
           </div>
@@ -1267,7 +1082,7 @@ class BookHubApp extends Component {
     const result = this.loginAdmin(adminData.username, adminData.password, adminData.securityCode);
     
     if (result.success) {
-      this.showToast('Admin access granted! 🔐', 'success');
+      this.showToast('Admin access granted!', 'success');
     } else {
       this.showToast(result.message, 'error');
     }
@@ -1289,11 +1104,6 @@ class BookHubApp extends Component {
     } else {
       this.showToast(result.message, 'error');
     }
-  }
-
-  handlePhoneSubmit = (e) => {
-    e.preventDefault();
-    this.handlePhoneLogin();
   }
 
   handleLogout = () => {
@@ -1368,12 +1178,13 @@ class BookHubApp extends Component {
       if (e.key === 'Escape') {
         if (this.state.showLoginModal) this.hideLoginModal();
         if (this.state.showBookModal) this.hideBookModal();
+        if (this.state.isMobileMenuOpen) this.closeMobileMenu();
       }
     });
   }
 
   renderLoginModal = () => {
-    const { showLoginModal, activeTab, activeForm, phoneData, registerData, loginData, adminData } = this.state;
+    const { showLoginModal, activeTab, activeForm, registerData, loginData, adminData } = this.state;
 
     if (!showLoginModal) return null;
 
@@ -1414,7 +1225,7 @@ class BookHubApp extends Component {
             </div>
           )}
           
-          {(activeForm === 'phone-login' || activeForm === 'register') && (
+          {activeForm === 'register' && (
             <button 
               onClick={this.showUserLogin}
               className="flex items-center text-secondary hover:text-primary-400 transition-colors duration-300 mb-4 text-sm"
@@ -1459,31 +1270,7 @@ class BookHubApp extends Component {
                 Let's Go!!!
               </button>
               
-              <div className="relative my-4">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-gray-600"></div>
-                </div>
-                <div className="relative flex justify-center text-sm">
-                  <span className="px-2 bg-card text-gray-500">Or continue with</span>
-                </div>
-              </div>
-              
-              <div className="grid grid-cols-2 gap-4">
-                <button type="button" className="flex items-center justify-center gap-2 py-3 border border-gray-600 rounded-lg hover:bg-gray-800 transition-all duration-300 hover:border-primary-400">
-                  <i className="fab fa-google text-red-500"></i>
-                  <span>Google</span>
-                </button>
-                <button 
-                  type="button" 
-                  onClick={this.showPhoneLogin}
-                  className="flex items-center justify-center gap-2 py-3 border border-gray-600 rounded-lg hover:bg-gray-800 transition-all duration-300 hover:border-primary-400"
-                >
-                  <i className="fas fa-phone text-green-500"></i>
-                  <span>Phone</span>
-                </button>
-              </div>
-              
-              <div className="text-center text-sm">
+              <div className="text-center text-sm mt-4">
                 Don't have an account? <button type="button" onClick={this.showRegistration} className="text-primary-400 hover:underline font-semibold">Sign up now! ✨</button>
               </div>
             </form>
@@ -1526,58 +1313,6 @@ class BookHubApp extends Component {
               </div>
               <button type="submit" className="w-full py-3 bg-primary-600 text-white font-semibold rounded-lg hover:bg-primary-700 transition-all duration-300 transform hover:scale-105">
                 Admin Login 
-              </button>
-            </form>
-          )}
-          
-          {activeForm === 'phone-login' && (
-            <form onSubmit={this.handlePhoneSubmit} className="space-y-4">
-              <div>
-                <label className="block text-sm font-semibold mb-2">Phone No.</label>
-                <div className="phone-input flex">
-                  <select 
-                    value={phoneData.countryCode}
-                    onChange={(e) => this.handleInputChange('phoneData', 'countryCode', e.target.value)}
-                    className="px-3 py-3 bg-dark border border-card rounded-l-lg focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 transition-all duration-300"
-                  >
-                    <option value="+1">🇺🇸 +1</option>
-                    <option value="+91">🇮🇳 +91</option>
-                    <option value="+44">🇬🇧 +44</option>
-                    <option value="+61">🇦🇺 +61</option>
-                  </select>
-                  <input 
-                    type="tel" 
-                    value={phoneData.phoneNumber}
-                    onChange={(e) => this.handleInputChange('phoneData', 'phoneNumber', e.target.value)}
-                    required 
-                    className="flex-1 px-4 py-3 bg-dark border border-card rounded-r-lg focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 transition-all duration-300" 
-                    placeholder="Enter phone number" 
-                  />
-                </div>
-              </div>
-              
-              {phoneData.otpSent && (
-                <div className="animate-fade-in-up">
-                  <label className="block text-sm font-semibold mb-2">Verification Code</label>
-                  <input 
-                    type="text" 
-                    value={phoneData.otpCode}
-                    onChange={(e) => this.handleInputChange('phoneData', 'otpCode', e.target.value)}
-                    required 
-                    className="w-full px-4 py-3 bg-dark border border-card rounded-lg focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 transition-all duration-300" 
-                    placeholder="Enter 6-digit code" 
-                  />
-                  <p className="text-xs text-secondary mt-1" id="otp-timer">
-                    Code expires in: <span id="countdown">05:00</span>
-                  </p>
-                </div>
-              )}
-              
-              <button 
-                type="submit" 
-                className="w-full py-3 bg-primary-600 text-white font-semibold rounded-lg hover:bg-primary-700 transition-all duration-300 transform hover:scale-105"
-              >
-                {phoneData.otpSent ? 'Verify Code' : 'Send Verification Code 📲'}
               </button>
             </form>
           )}
@@ -1649,8 +1384,32 @@ class BookHubApp extends Component {
     );
   }
 
+  renderMobileMenu = () => {
+    if (!this.state.isMobileMenuOpen) return null;
+
+    return (
+      <div className="md:hidden fixed inset-0 z-40 bg-dark/95 backdrop-blur-sm">
+        <div className="flex flex-col items-center justify-center h-full space-y-8">
+          <button 
+            onClick={this.closeMobileMenu}
+            className="absolute top-6 right-6 text-2xl text-secondary hover:text-primary-400"
+          >
+            <i className="fas fa-times"></i>
+          </button>
+          
+          <a href="#home" onClick={this.closeMobileMenu} className="nav-link text-2xl text-secondary hover:text-primary-400 transition-colors duration-300">Home</a>
+          <a href="#library" onClick={this.closeMobileMenu} className="nav-link text-2xl text-secondary hover:text-primary-400 transition-colors duration-300">My Library</a>
+          <a href="#discover" onClick={this.closeMobileMenu} className="nav-link text-2xl text-secondary hover:text-primary-400 transition-colors duration-300">Discover</a>
+          <a href="#reviews" onClick={this.closeMobileMenu} className="nav-link text-2xl text-secondary hover:text-primary-400 transition-colors duration-300">Reviews</a>
+          <a href="#stats" onClick={this.closeMobileMenu} className="nav-link text-2xl text-secondary hover:text-primary-400 transition-colors duration-300">Stats</a>
+          <a href="#trending" onClick={this.closeMobileMenu} className="nav-link text-2xl text-secondary hover:text-primary-400 transition-colors duration-300">Trending</a>
+        </div>
+      </div>
+    );
+  }
+
   render() {
-    const { currentUser, showBookModal, activeBook, activeGenre } = this.state;
+    const { currentUser, showBookModal, activeBook, activeGenre, isMobileMenuOpen } = this.state;
 
     return (
       <div className="App">
@@ -1676,6 +1435,9 @@ class BookHubApp extends Component {
         <div className="fixed inset-0 z-0 grid-bg"></div>
         <div id="particles-container" className="fixed inset-0 z-0"></div>
 
+        {/* Mobile Menu */}
+        {this.renderMobileMenu()}
+
         <nav className="fixed top-0 w-full bg-dark/90 backdrop-blur-sm z-50 border-b border-card">
           <div className="container mx-auto px-6 py-4">
             <div className="flex justify-between items-center">
@@ -1699,7 +1461,7 @@ class BookHubApp extends Component {
                 {currentUser && (
                   <div className="flex items-center space-x-2">
                     <img src={currentUser.avatar} alt="User" className="h-8 w-8 rounded-full" />
-                    <span className="text-sm font-medium">{currentUser.name}</span>
+                    <span className="text-sm font-medium hidden sm:block">{currentUser.name}</span>
                     <button onClick={this.handleLogout} className="text-secondary hover:text-primary-400 transition-colors duration-300">
                       <i className="fas fa-sign-out-alt"></i>
                     </button>
@@ -1713,12 +1475,15 @@ class BookHubApp extends Component {
                 {!currentUser && (
                   <button onClick={this.showLoginModal} className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors duration-300 flex items-center gap-2">
                     <i className="fas fa-user"></i>
-                    Login
+                    <span className="hidden sm:block">Login</span>
                   </button>
                 )}
 
-                <button className="md:hidden text-secondary">
-                  <i className="fas fa-bars text-xl"></i>
+                <button 
+                  onClick={this.toggleMobileMenu}
+                  className="md:hidden text-secondary hover:text-primary-400 transition-colors duration-300"
+                >
+                  <i className={`fas ${isMobileMenuOpen ? 'fa-times' : 'fa-bars'} text-xl`}></i>
                 </button>
               </div>
             </div>
@@ -1809,7 +1574,7 @@ class BookHubApp extends Component {
             </div>
 
             <div className="flex flex-wrap gap-3 mb-8 justify-center">
-              {['all', 'fiction', 'non-fiction', 'fantasy', 'mystery', 'classics', 'indian'].map(genre => (
+              {['all', 'indian', 'fiction', 'classics'].map(genre => (
                 <button
                   key={genre}
                   onClick={() => this.handleGenreFilter(genre)}
@@ -1844,9 +1609,6 @@ class BookHubApp extends Component {
             </div>
           </div>
         </section>
-        <div className="fab">
-          <i className="fas fa-plus text-xl"></i>
-        </div>
 
         {this.renderLoginModal()}
       </div>
