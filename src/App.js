@@ -45,7 +45,16 @@ class BookHubApp extends Component {
       },
       failedAttempts: JSON.parse(localStorage.getItem('failed_attempts')) || {},
       isLocked: false,
-      lockUntil: JSON.parse(localStorage.getItem('lock_until')) || 0
+      lockUntil: JSON.parse(localStorage.getItem('lock_until')) || 0,
+      // NEW: Library filter and sort states
+      libraryFilter: 'all',
+      librarySort: 'title',
+      // NEW: Update progress modal state
+      showProgressModal: false,
+      progressData: {
+        currentPage: 0,
+        status: 'to-read'
+      }
     };
 
     this.encryptionKey = this.generateEncryptionKey();
@@ -556,7 +565,123 @@ class BookHubApp extends Component {
     this.setState({ isMobileMenuOpen: false });
   }
 
-  // Review System Methods - FIXED
+  // NEW: Handle Add Book - Redirect to Search
+  handleAddBook = () => {
+    // Scroll to discover section and focus search
+    const discoverSection = document.getElementById('discover');
+    if (discoverSection) {
+      discoverSection.scrollIntoView({ behavior: 'smooth' });
+    }
+    
+    // Focus search input after a small delay
+    setTimeout(() => {
+      const searchInput = document.querySelector('input[placeholder*="Search for books"]');
+      if (searchInput) {
+        searchInput.focus();
+      }
+    }, 500);
+    
+    this.showToast('Search for books to add to your library!', 'info');
+  }
+
+  // NEW: Library Filter and Sort Functions
+  handleLibraryFilter = (filter) => {
+    this.setState({ libraryFilter: filter });
+  }
+
+  handleLibrarySort = (sort) => {
+    this.setState({ librarySort: sort });
+  }
+
+  // NEW: Get filtered and sorted library
+  getFilteredSortedLibrary = () => {
+    const { userLibrary, libraryFilter, librarySort } = this.state;
+    
+    let filtered = userLibrary;
+    
+    // Apply filter
+    if (libraryFilter !== 'all') {
+      filtered = userLibrary.filter(book => book.status === libraryFilter);
+    }
+    
+    // Apply sort
+    const sorted = [...filtered].sort((a, b) => {
+      switch (librarySort) {
+        case 'title':
+          return a.title.localeCompare(b.title);
+        case 'author':
+          return a.author.localeCompare(b.author);
+        case 'date-added':
+          return new Date(b.addedDate) - new Date(a.addedDate);
+        case 'progress':
+          return (b.currentPage / b.pages) - (a.currentPage / a.pages);
+        default:
+          return 0;
+      }
+    });
+    
+    return sorted;
+  }
+
+  // NEW: Update Progress Functions
+  showProgressModal = (book) => {
+    this.setState({ 
+      showProgressModal: true,
+      activeBook: book,
+      progressData: {
+        currentPage: book.currentPage || 0,
+        status: book.status || 'to-read'
+      }
+    });
+  }
+
+  hideProgressModal = () => {
+    this.setState({ 
+      showProgressModal: false,
+      activeBook: null
+    });
+  }
+
+  handleProgressInputChange = (field, value) => {
+    this.setState(prevState => ({
+      progressData: {
+        ...prevState.progressData,
+        [field]: value
+      }
+    }));
+  }
+
+  updateBookProgress = (e) => {
+    e.preventDefault();
+    const { activeBook, progressData, userLibrary } = this.state;
+    
+    if (!activeBook) return;
+
+    const updatedLibrary = userLibrary.map(book => {
+      if (book.id === activeBook.id) {
+        const progressPercentage = progressData.currentPage > 0 ? 
+          Math.min(100, Math.round((progressData.currentPage / book.pages) * 100)) : 0;
+        
+        return {
+          ...book,
+          currentPage: parseInt(progressData.currentPage) || 0,
+          status: progressData.status,
+          progressPercentage: progressPercentage
+        };
+      }
+      return book;
+    });
+
+    this.setState({ 
+      userLibrary: updatedLibrary,
+      showProgressModal: false
+    });
+
+    localStorage.setItem('user_library', JSON.stringify(updatedLibrary));
+    this.showToast('Progress updated successfully!', 'success');
+  }
+
+  // Review System Methods
   showReviewModal = (book = null) => {
     if (!this.state.currentUser) {
       this.showToast('Please login to write a review', 'warning');
@@ -583,7 +708,6 @@ class BookHubApp extends Component {
     });
   }
 
-  // FIXED: Properly handle review input changes
   handleReviewInputChange = (field, value) => {
     this.setState(prevState => ({
       reviewData: {
@@ -593,7 +717,6 @@ class BookHubApp extends Component {
     }));
   }
 
-  // FIXED: Proper star rating setter
   setRating = (rating) => {
     this.setState(prevState => ({
       reviewData: {
@@ -603,7 +726,6 @@ class BookHubApp extends Component {
     }));
   }
 
-  // FIXED: Submit review function
   submitReview = (e) => {
     e.preventDefault();
     const { currentUser, activeBook, reviewData, userReviews } = this.state;
@@ -628,7 +750,6 @@ class BookHubApp extends Component {
       return;
     }
 
-    // Check if user already reviewed this book
     const existingReview = userReviews.find(review => 
       review.userId === currentUser.id && review.bookId === activeBook.id
     );
@@ -674,20 +795,17 @@ class BookHubApp extends Component {
 
     const updatedReviews = userReviews.map(review => {
       if (review.id === reviewId) {
-        // Check if user already liked this review
         if (!review.likedBy) {
           review.likedBy = [];
         }
         
         if (review.likedBy.includes(currentUser.id)) {
-          // Unlike
           return {
             ...review,
             likes: review.likes - 1,
             likedBy: review.likedBy.filter(id => id !== currentUser.id)
           };
         } else {
-          // Like
           return {
             ...review,
             likes: review.likes + 1,
@@ -746,23 +864,9 @@ class BookHubApp extends Component {
   // Book Management
   loadSampleData = () => {
     const { userLibrary, userReviews } = this.state;
-    if (userLibrary.length === 0) {
-      const sampleLibrary = [{
-        id: '1',
-        title: 'The Great Gatsby',
-        author: 'F. Scott Fitzgerald',
-        cover: 'https://via.placeholder.com/150x200/2563eb/ffffff?text=Gatsby',
-        pages: 180,
-        currentPage: 0,
-        genre: 'Fiction',
-        status: 'to-read',
-        addedDate: new Date().toISOString()
-      }];
-      
-      this.setState({ userLibrary: sampleLibrary });
-      localStorage.setItem('user_library', JSON.stringify(sampleLibrary));
-    }
-
+    
+    // REMOVED: The Great Gatsby sample book
+    
     if (userReviews.length === 0) {
       const allReviews = [...this.sampleReviews];
       this.setState({ userReviews: allReviews });
@@ -784,7 +888,8 @@ class BookHubApp extends Component {
         ...book,
         currentPage: 0,
         status: 'to-read',
-        addedDate: new Date().toISOString()
+        addedDate: new Date().toISOString(),
+        progressPercentage: 0
       };
       
       const newLibrary = [...userLibrary, bookToAdd];
@@ -970,7 +1075,7 @@ class BookHubApp extends Component {
     this.applyTheme(newTheme);
   }
 
-  // FIXED: Render Stars Method
+  // Render Stars Method
   renderStars = (rating, interactive = false, onStarClick = null) => {
     return (
       <div className="star-rating">
@@ -988,6 +1093,100 @@ class BookHubApp extends Component {
             onClick={interactive ? () => onStarClick(star) : undefined}
           />
         ))}
+      </div>
+    );
+  }
+
+  // NEW: Render Progress Modal
+  renderProgressModal = () => {
+    const { showProgressModal, activeBook, progressData } = this.state;
+
+    if (!showProgressModal || !activeBook) return null;
+
+    const progressPercentage = progressData.currentPage > 0 ? 
+      Math.min(100, Math.round((progressData.currentPage / activeBook.pages) * 100)) : 0;
+
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 animate-fade-in-up p-4">
+        <div className="bg-card rounded-xl p-6 max-w-md w-full mx-auto card-hover relative">
+          <button 
+            onClick={this.hideProgressModal}
+            className="absolute top-3 right-3 text-secondary hover:text-primary-400 transition-colors duration-300 text-lg"
+          >
+            <i className="fas fa-times"></i>
+          </button>
+
+          <h3 className="text-xl font-semibold mb-2 text-center">Update Reading Progress</h3>
+          <p className="text-center text-secondary text-sm mb-4">for "{activeBook.title}"</p>
+
+          <form onSubmit={this.updateBookProgress} className="space-y-4">
+            {/* Status Selection */}
+            <div>
+              <label className="block text-sm font-semibold mb-2">Reading Status</label>
+              <select 
+                value={progressData.status}
+                onChange={(e) => this.handleProgressInputChange('status', e.target.value)}
+                className="w-full px-3 py-2 bg-dark border border-card rounded-lg focus:border-primary-500 focus:ring-1 focus:ring-primary-500/20 transition-all duration-300 text-sm"
+              >
+                <option value="to-read">To Read</option>
+                <option value="reading">Currently Reading</option>
+                <option value="completed">Completed</option>
+              </select>
+            </div>
+
+            {/* Current Page Input */}
+            <div>
+              <label className="block text-sm font-semibold mb-2">
+                Current Page (Total: {activeBook.pages})
+              </label>
+              <input 
+                type="number" 
+                min="0"
+                max={activeBook.pages}
+                value={progressData.currentPage}
+                onChange={(e) => this.handleProgressInputChange('currentPage', e.target.value)}
+                className="w-full px-3 py-2 bg-dark border border-card rounded-lg focus:border-primary-500 focus:ring-1 focus:ring-primary-500/20 transition-all duration-300 text-sm" 
+                placeholder={`Enter current page (0-${activeBook.pages})`}
+              />
+            </div>
+
+            {/* Progress Display */}
+            {progressData.currentPage > 0 && (
+              <div className="bg-dark rounded-lg p-3">
+                <div className="flex justify-between mb-1">
+                  <span className="text-sm text-secondary">Progress</span>
+                  <span className="text-sm font-semibold text-primary-400">{progressPercentage}%</span>
+                </div>
+                <div className="w-full bg-gray-600 rounded-full h-2">
+                  <div 
+                    className="bg-primary-600 h-2 rounded-full transition-all duration-300"
+                    style={{ width: `${progressPercentage}%` }}
+                  ></div>
+                </div>
+                <p className="text-xs text-secondary mt-1">
+                  {progressData.currentPage} / {activeBook.pages} pages
+                </p>
+              </div>
+            )}
+
+            {/* Submit Button */}
+            <div className="flex gap-3 pt-2">
+              <button 
+                type="button"
+                onClick={this.hideProgressModal}
+                className="flex-1 py-2 border border-secondary text-secondary font-semibold rounded-lg hover:bg-secondary hover:text-white transition-all duration-300 text-sm"
+              >
+                Cancel
+              </button>
+              <button 
+                type="submit"
+                className="flex-1 py-2 bg-primary-600 text-white font-semibold rounded-lg hover:bg-primary-700 transition-all duration-300 text-sm"
+              >
+                Update Progress
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
     );
   }
@@ -1385,8 +1584,9 @@ class BookHubApp extends Component {
     });
   }
 
+  // UPDATED: Render User Library with Filter and Sort
   renderUserLibrary = () => {
-    const { currentUser, userLibrary, userReviews } = this.state;
+    const { currentUser, userReviews, libraryFilter, librarySort } = this.state;
     
     if (!currentUser) {
       return (
@@ -1398,7 +1598,9 @@ class BookHubApp extends Component {
       );
     }
 
-    if (userLibrary.length === 0) {
+    const filteredSortedLibrary = this.getFilteredSortedLibrary();
+
+    if (filteredSortedLibrary.length === 0) {
       return (
         <div className="col-span-full text-center py-12">
           <i className="fas fa-book-open text-6xl text-secondary mb-4"></i>
@@ -1408,35 +1610,55 @@ class BookHubApp extends Component {
       );
     }
 
-    return userLibrary.map(book => {
+    return filteredSortedLibrary.map(book => {
       const bookReviews = userReviews.filter(review => review.bookId === book.id);
       const userHasReviewed = currentUser && bookReviews.some(review => review.userId === currentUser.id);
+      const progressPercentage = book.progressPercentage || 
+        (book.currentPage > 0 ? Math.min(100, Math.round((book.currentPage / book.pages) * 100)) : 0);
 
       return (
         <div key={book.id} className="bg-dark rounded-2xl p-6 card-hover">
           <div className="flex items-start space-x-4">
-            <img src={book.cover} alt={book.title} className="book-cover rounded-lg" />
+            <img src={book.cover} alt={book.title} className="book-cover rounded-lg w-24 h-32 object-cover" />
             <div className="flex-1">
               <h3 className="text-xl font-semibold text-primary-400 mb-1">{book.title}</h3>
               <p className="text-secondary mb-2">by {book.author}</p>
               <div className="flex items-center mb-4">
                 <span className="px-2 py-1 bg-card text-xs rounded-full text-secondary">{book.genre}</span>
+                <span className={`px-2 py-1 text-xs rounded-full text-white ml-2 ${
+                  book.status === 'completed' ? 'bg-green-600' :
+                  book.status === 'reading' ? 'bg-blue-600' : 'bg-gray-600'
+                }`}>
+                  {book.status === 'completed' ? 'Completed' :
+                   book.status === 'reading' ? 'Reading' : 'To Read'}
+                </span>
                 {userHasReviewed && (
                   <span className="px-2 py-1 bg-green-600 text-xs rounded-full text-white ml-2">Reviewed</span>
                 )}
               </div>
+              
+              {/* Progress Section */}
               <div className="mb-4">
                 <div className="flex justify-between mb-1">
                   <span className="text-sm text-secondary">Progress</span>
-                  <span className="text-sm font-semibold text-primary-400">0%</span>
+                  <span className="text-sm font-semibold text-primary-400">{progressPercentage}%</span>
                 </div>
-                <div className="progress-bar">
-                  <div className="progress-fill" style={{ width: '0%' }}></div>
+                <div className="w-full bg-gray-600 rounded-full h-2">
+                  <div 
+                    className="bg-primary-600 h-2 rounded-full transition-all duration-300"
+                    style={{ width: `${progressPercentage}%` }}
+                  ></div>
                 </div>
-                <p className="text-xs text-secondary mt-1">0/{book.pages} pages</p>
+                <p className="text-xs text-secondary mt-1">
+                  {book.currentPage || 0} / {book.pages} pages
+                </p>
               </div>
+              
               <div className="flex space-x-2">
-                <button className="update-progress-btn flex-1 py-2 bg-primary-600 text-white text-sm rounded-lg hover:bg-primary-700 transition-colors duration-300">
+                <button 
+                  onClick={() => this.showProgressModal(book)}
+                  className="update-progress-btn flex-1 py-2 bg-primary-600 text-white text-sm rounded-lg hover:bg-primary-700 transition-colors duration-300"
+                >
                   Update Progress
                 </button>
                 <button 
@@ -1464,7 +1686,7 @@ class BookHubApp extends Component {
     });
   }
 
-  // FIXED: Review Modal - More Compact
+  // Review Modal
   renderReviewModal = () => {
     const { showReviewModal, activeBook, reviewData, currentUser } = this.state;
 
@@ -1484,7 +1706,7 @@ class BookHubApp extends Component {
           <p className="text-center text-secondary text-sm mb-4">for "{activeBook.title}"</p>
 
           <form onSubmit={this.submitReview} className="space-y-4">
-            {/* Star Rating - FIXED */}
+            {/* Star Rating */}
             <div className="text-center">
               <label className="block text-sm font-semibold mb-2">Your Rating</label>
               <div className="star-rating text-2xl mb-2">
@@ -1701,6 +1923,7 @@ class BookHubApp extends Component {
         if (this.state.showLoginModal) this.hideLoginModal();
         if (this.state.showBookModal) this.hideBookModal();
         if (this.state.showReviewModal) this.hideReviewModal();
+        if (this.state.showProgressModal) this.hideProgressModal();
         if (this.state.isMobileMenuOpen) this.closeMobileMenu();
       }
     });
@@ -1932,7 +2155,7 @@ class BookHubApp extends Component {
   }
 
   render() {
-    const { currentUser, showBookModal, showReviewModal, activeBook, activeGenre, isMobileMenuOpen, showSearchResults } = this.state;
+    const { currentUser, showBookModal, showReviewModal, showProgressModal, activeBook, activeGenre, isMobileMenuOpen, showSearchResults, libraryFilter, librarySort } = this.state;
 
     return (
       <div className="App">
@@ -1957,6 +2180,9 @@ class BookHubApp extends Component {
 
         {/* Review Modal */}
         {this.renderReviewModal()}
+
+        {/* Progress Modal */}
+        {this.renderProgressModal()}
 
         <div className="fixed inset-0 z-0 grid-bg"></div>
         <div id="particles-container" className="fixed inset-0 z-0"></div>
@@ -2068,19 +2294,49 @@ class BookHubApp extends Component {
               </p>
             </div>
 
+            {/* UPDATED: Library Controls */}
             <div className="flex flex-wrap gap-4 mb-8 justify-center">
-              <button className="px-6 py-3 bg-primary-600 text-white font-semibold rounded-lg hover:bg-primary-700 transition-colors duration-300 flex items-center gap-2">
+              <button 
+                onClick={this.handleAddBook}
+                className="px-6 py-3 bg-primary-600 text-white font-semibold rounded-lg hover:bg-primary-700 transition-colors duration-300 flex items-center gap-2"
+              >
                 <i className="fas fa-plus"></i>
                 Add Book
               </button>
-              <button className="px-6 py-3 border border-primary-600 text-primary-600 font-semibold rounded-lg hover:bg-primary-600 hover:text-white transition-all duration-300 flex items-center gap-2">
-                <i className="fas fa-filter"></i>
-                Filter
-              </button>
-              <button className="px-6 py-3 border border-accent text-accent font-semibold rounded-lg hover:bg-accent hover:text-white transition-all duration-300 flex items-center gap-2">
-                <i className="fas fa-sort"></i>
-                Sort
-              </button>
+              
+              {/* Filter Dropdown */}
+              <div className="relative">
+                <select 
+                  value={libraryFilter}
+                  onChange={(e) => this.handleLibraryFilter(e.target.value)}
+                  className="px-6 py-3 bg-dark border border-primary-600 text-primary-600 font-semibold rounded-lg hover:bg-primary-600 hover:text-white transition-all duration-300 appearance-none pr-10"
+                >
+                  <option value="all">All Books</option>
+                  <option value="to-read">To Read</option>
+                  <option value="reading">Reading</option>
+                  <option value="completed">Completed</option>
+                </select>
+                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-primary-600">
+                  <i className="fas fa-filter"></i>
+                </div>
+              </div>
+
+              {/* Sort Dropdown */}
+              <div className="relative">
+                <select 
+                  value={librarySort}
+                  onChange={(e) => this.handleLibrarySort(e.target.value)}
+                  className="px-6 py-3 bg-dark border border-accent text-accent font-semibold rounded-lg hover:bg-accent hover:text-white transition-all duration-300 appearance-none pr-10"
+                >
+                  <option value="title">Sort by Title</option>
+                  <option value="author">Sort by Author</option>
+                  <option value="date-added">Sort by Date Added</option>
+                  <option value="progress">Sort by Progress</option>
+                </select>
+                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-accent">
+                  <i className="fas fa-sort"></i>
+                </div>
+              </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
