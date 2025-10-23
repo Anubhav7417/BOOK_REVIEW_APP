@@ -21,6 +21,14 @@ class BookHubApp extends Component {
       // New state for search functionality
       searchResults: [],
       showSearchResults: false,
+      // New state for review system
+      showReviewModal: false,
+      reviewData: {
+        rating: 0,
+        title: '',
+        content: '',
+        memeReview: ''
+      },
       registerData: {
         name: '',
         username: '',
@@ -595,6 +603,149 @@ class BookHubApp extends Component {
     this.setState({ isMobileMenuOpen: false });
   }
 
+  // Review System Methods
+  showReviewModal = (book = null) => {
+    if (!this.state.currentUser) {
+      this.showToast('Please login to write a review', 'warning');
+      this.showLoginModal();
+      return;
+    }
+    
+    this.setState({ 
+      showReviewModal: true,
+      activeBook: book,
+      reviewData: {
+        rating: 0,
+        title: '',
+        content: '',
+        memeReview: ''
+      }
+    });
+  }
+
+  hideReviewModal = () => {
+    this.setState({ 
+      showReviewModal: false,
+      activeBook: null
+    });
+  }
+
+  handleReviewInputChange = (field, value) => {
+    const sanitizedValue = this.sanitizeInput(value);
+    this.setState(prevState => ({
+      reviewData: {
+        ...prevState.reviewData,
+        [field]: sanitizedValue
+      }
+    }));
+  }
+
+  setRating = (rating) => {
+    this.setState(prevState => ({
+      reviewData: {
+        ...prevState.reviewData,
+        rating: rating
+      }
+    }));
+  }
+
+  submitReview = (e) => {
+    e.preventDefault();
+    const { currentUser, activeBook, reviewData, userReviews } = this.state;
+    
+    if (!currentUser) {
+      this.showToast('Please login to submit a review', 'error');
+      return;
+    }
+
+    if (!activeBook) {
+      this.showToast('No book selected for review', 'error');
+      return;
+    }
+
+    if (reviewData.rating === 0) {
+      this.showToast('Please select a rating', 'error');
+      return;
+    }
+
+    if (!reviewData.title.trim() || !reviewData.content.trim()) {
+      this.showToast('Please fill in title and review content', 'error');
+      return;
+    }
+
+    // Check if user already reviewed this book
+    const existingReview = userReviews.find(review => 
+      review.userId === currentUser.id && review.bookId === activeBook.id
+    );
+
+    if (existingReview) {
+      this.showToast('You have already reviewed this book', 'warning');
+      return;
+    }
+
+    const newReview = {
+      id: 'review_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
+      bookId: activeBook.id,
+      userId: currentUser.id,
+      userName: currentUser.name,
+      userAvatar: currentUser.avatar,
+      rating: reviewData.rating,
+      title: reviewData.title,
+      content: reviewData.content,
+      memeReview: reviewData.memeReview || 'This book gave me all the feels! 📚✨',
+      date: new Date().toISOString().split('T')[0],
+      likes: 0
+    };
+
+    const newUserReviews = [...userReviews, newReview];
+    this.setState({ 
+      userReviews: newUserReviews,
+      showReviewModal: false,
+      reviewData: { rating: 0, title: '', content: '', memeReview: '' }
+    });
+
+    localStorage.setItem('user_reviews', JSON.stringify(newUserReviews));
+    this.showToast('Review submitted successfully! 💫', 'success');
+  }
+
+  likeReview = (reviewId) => {
+    const { userReviews, currentUser } = this.state;
+    
+    if (!currentUser) {
+      this.showToast('Please login to like reviews', 'warning');
+      return;
+    }
+
+    const updatedReviews = userReviews.map(review => {
+      if (review.id === reviewId) {
+        // Check if user already liked this review
+        if (!review.likedBy) {
+          review.likedBy = [];
+        }
+        
+        if (review.likedBy.includes(currentUser.id)) {
+          // Unlike
+          return {
+            ...review,
+            likes: review.likes - 1,
+            likedBy: review.likedBy.filter(id => id !== currentUser.id)
+          };
+        } else {
+          // Like
+          return {
+            ...review,
+            likes: review.likes + 1,
+            likedBy: [...review.likedBy, currentUser.id]
+          };
+        }
+      }
+      return review;
+    });
+
+    this.setState({ userReviews: updatedReviews });
+    localStorage.setItem('user_reviews', JSON.stringify(updatedReviews));
+  }
+
   // Input Handlers
   handleInputChange = (form, field, value) => {
     const sanitizedValue = this.sanitizeInput(value);
@@ -639,7 +790,7 @@ class BookHubApp extends Component {
 
   // Book Management
   loadSampleData = () => {
-    const { userLibrary } = this.state;
+    const { userLibrary, userReviews } = this.state;
     if (userLibrary.length === 0) {
       const sampleLibrary = [{
         id: '1',
@@ -655,6 +806,12 @@ class BookHubApp extends Component {
       
       this.setState({ userLibrary: sampleLibrary });
       localStorage.setItem('user_library', JSON.stringify(sampleLibrary));
+    }
+
+    if (userReviews.length === 0) {
+      const allReviews = [...this.sampleReviews];
+      this.setState({ userReviews: allReviews });
+      localStorage.setItem('user_reviews', JSON.stringify(allReviews));
     }
   }
 
@@ -678,7 +835,7 @@ class BookHubApp extends Component {
       const newLibrary = [...userLibrary, bookToAdd];
       this.setState({ userLibrary: newLibrary });
       localStorage.setItem('user_library', JSON.stringify(newLibrary));
-      this.showToast(`Added "${book.title}" to your library! `, 'success');
+      this.showToast(`Added "${book.title}" to your library! 📚`, 'success');
     } else {
       this.showToast('Book is already in your library', 'warning');
     }
@@ -861,22 +1018,33 @@ class BookHubApp extends Component {
   }
 
   // Render Methods
-  renderStars = (rating) => {
+  renderStars = (rating, interactive = false, onStarClick = null) => {
     let stars = '';
     for (let i = 1; i <= 5; i++) {
       if (i <= Math.floor(rating)) {
-        stars += '<i class="fas fa-star text-yellow-400"></i>';
+        stars += `<i class="fas fa-star text-yellow-400 ${interactive ? 'cursor-pointer hover:scale-110' : ''}" data-rating="${i}"></i>`;
       } else if (i - 0.5 <= rating) {
-        stars += '<i class="fas fa-star-half-alt text-yellow-400"></i>';
+        stars += `<i class="fas fa-star-half-alt text-yellow-400 ${interactive ? 'cursor-pointer hover:scale-110' : ''}" data-rating="${i}"></i>`;
       } else {
-        stars += '<i class="far fa-star text-yellow-400"></i>';
+        stars += `<i class="far fa-star text-yellow-400 ${interactive ? 'cursor-pointer hover:scale-110' : ''}" data-rating="${i}"></i>`;
       }
     }
-    return stars;
+    
+    const starElement = document.createElement('div');
+    starElement.className = 'star-rating';
+    starElement.innerHTML = stars;
+    
+    if (interactive && onStarClick) {
+      starElement.querySelectorAll('i').forEach(star => {
+        star.addEventListener('click', () => onStarClick(parseInt(star.getAttribute('data-rating'))));
+      });
+    }
+    
+    return starElement.innerHTML;
   }
 
   renderBookDetailsModal = () => {
-    const { activeBook } = this.state;
+    const { activeBook, currentUser, userReviews } = this.state;
     
     if (!activeBook) {
       return (
@@ -885,6 +1053,10 @@ class BookHubApp extends Component {
         </div>
       );
     }
+
+    // Get reviews for this book
+    const bookReviews = userReviews.filter(review => review.bookId === activeBook.id);
+    const userHasReviewed = currentUser && bookReviews.some(review => review.userId === currentUser.id);
 
     return (
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -930,7 +1102,7 @@ class BookHubApp extends Component {
             <p className="text-secondary leading-relaxed">{activeBook.description}</p>
           </div>
           
-          <div className="flex flex-wrap gap-4">
+          <div className="flex flex-wrap gap-4 mb-8">
             <button 
               onClick={() => this.addBookToLibrary(activeBook)}
               className="px-6 py-3 bg-primary-600 text-white font-semibold rounded-lg hover:bg-primary-700 transition-colors duration-300 flex items-center gap-2"
@@ -970,10 +1142,74 @@ class BookHubApp extends Component {
               </button>
             )}
             
-            <button className="px-6 py-3 border border-accent text-accent font-semibold rounded-lg hover:bg-accent hover:text-white transition-all duration-300 flex items-center gap-2">
-              <i className="fas fa-share"></i>
-              Share
+            <button 
+              onClick={() => this.showReviewModal(activeBook)}
+              className={`px-6 py-3 border font-semibold rounded-lg transition-all duration-300 flex items-center gap-2 ${
+                userHasReviewed 
+                  ? 'border-gray-500 text-gray-500 cursor-not-allowed' 
+                  : 'border-accent text-accent hover:bg-accent hover:text-white'
+              }`}
+              disabled={userHasReviewed}
+            >
+              <i className="fas fa-pen"></i>
+              {userHasReviewed ? 'Review Submitted' : 'Write Review'}
             </button>
+          </div>
+
+          {/* Reviews Section in Book Details */}
+          <div className="mt-8">
+            <h3 className="text-2xl font-semibold mb-4 text-primary-400">Reader Reviews</h3>
+            {bookReviews.length > 0 ? (
+              <div className="space-y-4 max-h-96 overflow-y-auto">
+                {bookReviews.map(review => (
+                  <div key={review.id} className="bg-card rounded-xl p-4">
+                    <div className="flex items-start space-x-3 mb-3">
+                      <img src={review.userAvatar} alt={review.userName} className="h-10 w-10 rounded-full" />
+                      <div className="flex-1">
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <h4 className="font-semibold text-primary-400">{review.userName}</h4>
+                            <div className="flex items-center mt-1">
+                              <div className="star-rating text-sm" dangerouslySetInnerHTML={{ __html: this.renderStars(review.rating) }} />
+                            </div>
+                          </div>
+                          <div className="text-sm text-secondary">{review.date}</div>
+                        </div>
+                      </div>
+                    </div>
+                    <h5 className="font-semibold text-lg mb-2">{review.title}</h5>
+                    <p className="text-secondary mb-3">{review.content}</p>
+                    {review.memeReview && (
+                      <div className="meme-review bg-dark rounded-lg p-3">
+                        <p className="text-sm font-medium text-accent">💡 Vibe Check:</p>
+                        <p className="text-sm">{review.memeReview}</p>
+                      </div>
+                    )}
+                    <div className="flex justify-between items-center mt-3">
+                      <button 
+                        onClick={() => this.likeReview(review.id)}
+                        className={`reaction-btn flex items-center gap-1 transition-colors duration-300 ${
+                          review.likedBy && review.likedBy.includes(this.state.currentUser?.id)
+                            ? 'text-red-500'
+                            : 'text-secondary hover:text-red-500'
+                        }`}
+                      >
+                        <i className="fas fa-heart"></i> 
+                        <span>{review.likes}</span>
+                      </button>
+                      <button className="text-secondary hover:text-primary-400 transition-colors duration-300">
+                        <i className="fas fa-share"></i>
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8 bg-card rounded-xl">
+                <i className="fas fa-comment-slash text-4xl text-secondary mb-3"></i>
+                <p className="text-secondary">No reviews yet. Be the first to review this book!</p>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -981,47 +1217,66 @@ class BookHubApp extends Component {
   }
 
   renderDiscoverBooks = () => {
-    const { activeGenre } = this.state;
+    const { activeGenre, currentUser, userReviews } = this.state;
     const filteredBooks = activeGenre === 'all' 
       ? this.sampleBooks 
       : this.sampleBooks.filter(book => book.genre === activeGenre);
 
-    return filteredBooks.map(book => (
-      <div key={book.id} className="bg-dark rounded-2xl p-6 card-hover">
-        <div className="flex flex-col items-center text-center">
-          <img src={book.cover} alt={book.title} className="book-cover mb-4 rounded-lg shadow-md" />
-          <h3 className="text-xl font-semibold text-primary-400 mb-1">{book.title}</h3>
-          <p className="text-secondary mb-2">by {book.author}</p>
-          <div className="flex items-center mb-3">
-            <span className="px-2 py-1 bg-card text-xs rounded-full text-secondary">{book.genre}</span>
-          </div>
-          <div className="flex items-center mb-3">
-            <div className="star-rating" dangerouslySetInnerHTML={{ __html: this.renderStars(book.rating) }} />
-            <span className="ml-2 text-sm text-secondary">{book.rating}</span>
-          </div>
-          <p className="text-sm text-secondary mb-4 line-clamp-3">{book.description}</p>
-          <div className="flex space-x-2 w-full">
+    return filteredBooks.map(book => {
+      const bookReviews = userReviews.filter(review => review.bookId === book.id);
+      const userHasReviewed = currentUser && bookReviews.some(review => review.userId === currentUser.id);
+
+      return (
+        <div key={book.id} className="bg-dark rounded-2xl p-6 card-hover">
+          <div className="flex flex-col items-center text-center">
+            <img src={book.cover} alt={book.title} className="book-cover mb-4 rounded-lg shadow-md" />
+            <h3 className="text-xl font-semibold text-primary-400 mb-1">{book.title}</h3>
+            <p className="text-secondary mb-2">by {book.author}</p>
+            <div className="flex items-center mb-3">
+              <span className="px-2 py-1 bg-card text-xs rounded-full text-secondary">{book.genre}</span>
+              {userHasReviewed && (
+                <span className="px-2 py-1 bg-green-600 text-xs rounded-full text-white ml-2">Reviewed</span>
+              )}
+            </div>
+            <div className="flex items-center mb-3">
+              <div className="star-rating" dangerouslySetInnerHTML={{ __html: this.renderStars(book.rating) }} />
+              <span className="ml-2 text-sm text-secondary">{book.rating}</span>
+            </div>
+            <p className="text-sm text-secondary mb-4 line-clamp-3">{book.description}</p>
+            <div className="flex space-x-2 w-full">
+              <button 
+                onClick={() => this.addBookToLibrary(book)}
+                className="add-to-library-btn flex-1 py-2 bg-primary-600 text-white text-sm rounded-lg hover:bg-primary-700 transition-colors duration-300"
+              >
+                Add to Library
+              </button>
+              <button 
+                onClick={() => this.showBookDetails(book.id)}
+                className="view-details-btn flex-1 py-2 border border-accent text-accent text-sm rounded-lg hover:bg-accent hover:text-white transition-all duration-300"
+              >
+                Details
+              </button>
+            </div>
             <button 
-              onClick={() => this.addBookToLibrary(book)}
-              className="add-to-library-btn flex-1 py-2 bg-primary-600 text-white text-sm rounded-lg hover:bg-primary-700 transition-colors duration-300"
+              onClick={() => this.showReviewModal(book)}
+              className={`w-full mt-3 py-2 text-sm rounded-lg transition-all duration-300 flex items-center justify-center gap-2 ${
+                userHasReviewed 
+                  ? 'bg-green-600 text-white cursor-default' 
+                  : 'bg-card text-secondary hover:bg-primary-600 hover:text-white'
+              }`}
             >
-              Add to Library
-            </button>
-            <button 
-              onClick={() => this.showBookDetails(book.id)}
-              className="view-details-btn flex-1 py-2 border border-accent text-accent text-sm rounded-lg hover:bg-accent hover:text-white transition-all duration-300"
-            >
-              Details
+              <i className="fas fa-pen"></i>
+              {userHasReviewed ? 'Review Submitted ✓' : 'Write Review'}
             </button>
           </div>
         </div>
-      </div>
-    ));
+      );
+    });
   }
 
   // Render Search Results
   renderSearchResults = () => {
-    const { searchResults } = this.state;
+    const { searchResults, currentUser, userReviews } = this.state;
     
     if (searchResults.length === 0) {
       return (
@@ -1033,40 +1288,59 @@ class BookHubApp extends Component {
       );
     }
 
-    return searchResults.map(book => (
-      <div key={book.id} className="bg-dark rounded-2xl p-6 card-hover">
-        <div className="flex flex-col items-center text-center">
-          <img src={book.cover} alt={book.title} className="book-cover mb-4 rounded-lg shadow-md" />
-          <h3 className="text-xl font-semibold text-primary-400 mb-1">{book.title}</h3>
-          <p className="text-secondary mb-2">by {book.author}</p>
-          <div className="flex items-center mb-3">
-            <span className="px-2 py-1 bg-card text-xs rounded-full text-secondary">{book.genre}</span>
-            {book.isGoogleBook && (
-              <span className="px-2 py-1 bg-blue-600 text-xs rounded-full text-white ml-2">Google Books</span>
-            )}
-          </div>
-          <div className="flex items-center mb-3">
-            <div className="star-rating" dangerouslySetInnerHTML={{ __html: this.renderStars(book.rating) }} />
-            <span className="ml-2 text-sm text-secondary">{book.rating}</span>
-          </div>
-          <p className="text-sm text-secondary mb-4 line-clamp-3">{book.description}</p>
-          <div className="flex space-x-2 w-full">
+    return searchResults.map(book => {
+      const bookReviews = userReviews.filter(review => review.bookId === book.id);
+      const userHasReviewed = currentUser && bookReviews.some(review => review.userId === currentUser.id);
+
+      return (
+        <div key={book.id} className="bg-dark rounded-2xl p-6 card-hover">
+          <div className="flex flex-col items-center text-center">
+            <img src={book.cover} alt={book.title} className="book-cover mb-4 rounded-lg shadow-md" />
+            <h3 className="text-xl font-semibold text-primary-400 mb-1">{book.title}</h3>
+            <p className="text-secondary mb-2">by {book.author}</p>
+            <div className="flex items-center mb-3">
+              <span className="px-2 py-1 bg-card text-xs rounded-full text-secondary">{book.genre}</span>
+              {book.isGoogleBook && (
+                <span className="px-2 py-1 bg-blue-600 text-xs rounded-full text-white ml-2">Google Books</span>
+              )}
+              {userHasReviewed && (
+                <span className="px-2 py-1 bg-green-600 text-xs rounded-full text-white ml-2">Reviewed</span>
+              )}
+            </div>
+            <div className="flex items-center mb-3">
+              <div className="star-rating" dangerouslySetInnerHTML={{ __html: this.renderStars(book.rating) }} />
+              <span className="ml-2 text-sm text-secondary">{book.rating}</span>
+            </div>
+            <p className="text-sm text-secondary mb-4 line-clamp-3">{book.description}</p>
+            <div className="flex space-x-2 w-full">
+              <button 
+                onClick={() => this.addBookToLibrary(book)}
+                className="add-to-library-btn flex-1 py-2 bg-primary-600 text-white text-sm rounded-lg hover:bg-primary-700 transition-colors duration-300"
+              >
+                Add to Library
+              </button>
+              <button 
+                onClick={() => this.showBookDetails(book.id)}
+                className="view-details-btn flex-1 py-2 border border-accent text-accent text-sm rounded-lg hover:bg-accent hover:text-white transition-all duration-300"
+              >
+                Details
+              </button>
+            </div>
             <button 
-              onClick={() => this.addBookToLibrary(book)}
-              className="add-to-library-btn flex-1 py-2 bg-primary-600 text-white text-sm rounded-lg hover:bg-primary-700 transition-colors duration-300"
+              onClick={() => this.showReviewModal(book)}
+              className={`w-full mt-3 py-2 text-sm rounded-lg transition-all duration-300 flex items-center justify-center gap-2 ${
+                userHasReviewed 
+                  ? 'bg-green-600 text-white cursor-default' 
+                  : 'bg-card text-secondary hover:bg-primary-600 hover:text-white'
+              }`}
             >
-              Add to Library
-            </button>
-            <button 
-              onClick={() => this.showBookDetails(book.id)}
-              className="view-details-btn flex-1 py-2 border border-accent text-accent text-sm rounded-lg hover:bg-accent hover:text-white transition-all duration-300"
-            >
-              Details
+              <i className="fas fa-pen"></i>
+              {userHasReviewed ? 'Review Submitted ✓' : 'Write Review'}
             </button>
           </div>
         </div>
-      </div>
-    ));
+      );
+    });
   }
 
   renderTrendingBooks = () => {
@@ -1106,8 +1380,15 @@ class BookHubApp extends Component {
   }
 
   renderReviews = () => {
-    return this.sampleReviews.map(review => {
-      const book = this.sampleBooks.find(b => b.id === review.bookId);
+    const { userReviews, currentUser } = this.state;
+    const allReviews = [...userReviews].reverse(); // Show latest reviews first
+
+    return allReviews.map(review => {
+      const book = this.sampleBooks.find(b => b.id === review.bookId) || 
+                  this.state.searchResults.find(b => b.id === review.bookId);
+
+      if (!book) return null;
+
       return (
         <div key={review.id} className="bg-dark rounded-2xl p-6 card-hover">
           <div className="flex items-start space-x-4 mb-4">
@@ -1133,8 +1414,16 @@ class BookHubApp extends Component {
           </div>
           <div className="flex justify-between items-center mt-4">
             <div className="flex space-x-4">
-              <button className="reaction-btn text-secondary hover:text-primary-400 transition-colors duration-300">
-                <i className="fas fa-thumbs-up"></i> {review.likes}
+              <button 
+                onClick={() => this.likeReview(review.id)}
+                className={`reaction-btn flex items-center gap-1 transition-colors duration-300 ${
+                  review.likedBy && review.likedBy.includes(currentUser?.id)
+                    ? 'text-red-500'
+                    : 'text-secondary hover:text-red-500'
+                }`}
+              >
+                <i className="fas fa-heart"></i> 
+                <span>{review.likes}</span>
               </button>
               <button className="reaction-btn text-secondary hover:text-primary-400 transition-colors duration-300">
                 <i className="fas fa-comment"></i> Reply
@@ -1150,7 +1439,7 @@ class BookHubApp extends Component {
   }
 
   renderUserLibrary = () => {
-    const { currentUser, userLibrary } = this.state;
+    const { currentUser, userLibrary, userReviews } = this.state;
     
     if (!currentUser) {
       return (
@@ -1172,41 +1461,165 @@ class BookHubApp extends Component {
       );
     }
 
-    return userLibrary.map(book => (
-      <div key={book.id} className="bg-dark rounded-2xl p-6 card-hover">
-        <div className="flex items-start space-x-4">
-          <img src={book.cover} alt={book.title} className="book-cover rounded-lg" />
-          <div className="flex-1">
-            <h3 className="text-xl font-semibold text-primary-400 mb-1">{book.title}</h3>
-            <p className="text-secondary mb-2">by {book.author}</p>
-            <div className="flex items-center mb-4">
-              <span className="px-2 py-1 bg-card text-xs rounded-full text-secondary">{book.genre}</span>
-            </div>
-            <div className="mb-4">
-              <div className="flex justify-between mb-1">
-                <span className="text-sm text-secondary">Progress</span>
-                <span className="text-sm font-semibold text-primary-400">0%</span>
+    return userLibrary.map(book => {
+      const bookReviews = userReviews.filter(review => review.bookId === book.id);
+      const userHasReviewed = currentUser && bookReviews.some(review => review.userId === currentUser.id);
+
+      return (
+        <div key={book.id} className="bg-dark rounded-2xl p-6 card-hover">
+          <div className="flex items-start space-x-4">
+            <img src={book.cover} alt={book.title} className="book-cover rounded-lg" />
+            <div className="flex-1">
+              <h3 className="text-xl font-semibold text-primary-400 mb-1">{book.title}</h3>
+              <p className="text-secondary mb-2">by {book.author}</p>
+              <div className="flex items-center mb-4">
+                <span className="px-2 py-1 bg-card text-xs rounded-full text-secondary">{book.genre}</span>
+                {userHasReviewed && (
+                  <span className="px-2 py-1 bg-green-600 text-xs rounded-full text-white ml-2">Reviewed</span>
+                )}
               </div>
-              <div className="progress-bar">
-                <div className="progress-fill" style={{ width: '0%' }}></div>
+              <div className="mb-4">
+                <div className="flex justify-between mb-1">
+                  <span className="text-sm text-secondary">Progress</span>
+                  <span className="text-sm font-semibold text-primary-400">0%</span>
+                </div>
+                <div className="progress-bar">
+                  <div className="progress-fill" style={{ width: '0%' }}></div>
+                </div>
+                <p className="text-xs text-secondary mt-1">0/{book.pages} pages</p>
               </div>
-              <p className="text-xs text-secondary mt-1">0/{book.pages} pages</p>
-            </div>
-            <div className="flex space-x-2">
-              <button className="update-progress-btn flex-1 py-2 bg-primary-600 text-white text-sm rounded-lg hover:bg-primary-700 transition-colors duration-300">
-                Update Progress
-              </button>
+              <div className="flex space-x-2">
+                <button className="update-progress-btn flex-1 py-2 bg-primary-600 text-white text-sm rounded-lg hover:bg-primary-700 transition-colors duration-300">
+                  Update Progress
+                </button>
+                <button 
+                  onClick={() => this.showBookDetails(book.id)}
+                  className="view-details-btn flex-1 py-2 border border-accent text-accent text-sm rounded-lg hover:bg-accent hover:text-white transition-all duration-300"
+                >
+                  Details
+                </button>
+              </div>
               <button 
-                onClick={() => this.showBookDetails(book.id)}
-                className="view-details-btn flex-1 py-2 border border-accent text-accent text-sm rounded-lg hover:bg-accent hover:text-white transition-all duration-300"
+                onClick={() => this.showReviewModal(book)}
+                className={`w-full mt-3 py-2 text-sm rounded-lg transition-all duration-300 flex items-center justify-center gap-2 ${
+                  userHasReviewed 
+                    ? 'bg-green-600 text-white cursor-default' 
+                    : 'bg-card text-secondary hover:bg-primary-600 hover:text-white'
+                }`}
               >
-                Details
+                <i className="fas fa-pen"></i>
+                {userHasReviewed ? 'Review Submitted ✓' : 'Write Review'}
               </button>
             </div>
           </div>
         </div>
+      );
+    });
+  }
+
+  // Review Modal
+  renderReviewModal = () => {
+    const { showReviewModal, activeBook, reviewData, currentUser } = this.state;
+
+    if (!showReviewModal || !activeBook) return null;
+
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 animate-fade-in-up">
+        <div className="bg-card rounded-2xl p-8 max-w-2xl w-full mx-4 card-hover relative max-h-[90vh] overflow-y-auto">
+          <button 
+            onClick={this.hideReviewModal}
+            className="absolute top-4 right-4 text-secondary hover:text-primary-400 transition-colors duration-300 text-xl"
+          >
+            <i className="fas fa-times"></i>
+          </button>
+
+          <h3 className="text-2xl font-semibold mb-2 text-center gradient-text">Write a Review</h3>
+          <p className="text-center text-secondary mb-6">for "{activeBook.title}" by {activeBook.author}</p>
+
+          <form onSubmit={this.submitReview} className="space-y-6">
+            {/* Star Rating */}
+            <div className="text-center">
+              <label className="block text-sm font-semibold mb-4">Your Rating</label>
+              <div 
+                className="star-rating text-3xl mb-2"
+                dangerouslySetInnerHTML={{ 
+                  __html: this.renderStars(reviewData.rating, true, this.setRating) 
+                }}
+              />
+              <p className="text-sm text-secondary">
+                {reviewData.rating === 0 ? 'Select your rating' : `${reviewData.rating} out of 5 stars`}
+              </p>
+            </div>
+
+            {/* Review Title */}
+            <div>
+              <label className="block text-sm font-semibold mb-2">Review Title</label>
+              <input 
+                type="text" 
+                value={reviewData.title}
+                onChange={(e) => this.handleReviewInputChange('title', e.target.value)}
+                required 
+                className="w-full px-4 py-3 bg-dark border border-card rounded-lg focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 transition-all duration-300" 
+                placeholder="Give your review a catchy title..." 
+                maxLength="100"
+              />
+            </div>
+
+            {/* Review Content */}
+            <div>
+              <label className="block text-sm font-semibold mb-2">Your Review</label>
+              <textarea 
+                value={reviewData.content}
+                onChange={(e) => this.handleReviewInputChange('content', e.target.value)}
+                required 
+                rows="5"
+                className="w-full px-4 py-3 bg-dark border border-card rounded-lg focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 transition-all duration-300 resize-none" 
+                placeholder="Share your thoughts about this book... What did you like or dislike? Would you recommend it?"
+                maxLength="1000"
+              />
+              <div className="text-right text-sm text-secondary mt-1">
+                {reviewData.content.length}/1000 characters
+              </div>
+            </div>
+
+            {/* Meme Review (Optional) */}
+            <div>
+              <label className="block text-sm font-semibold mb-2">
+                Vibe Check (Optional) 💫
+              </label>
+              <input 
+                type="text" 
+                value={reviewData.memeReview}
+                onChange={(e) => this.handleReviewInputChange('memeReview', e.target.value)}
+                className="w-full px-4 py-3 bg-dark border border-card rounded-lg focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 transition-all duration-300" 
+                placeholder="Add a funny one-liner or meme caption about this book..."
+                maxLength="150"
+              />
+              <div className="text-right text-sm text-secondary mt-1">
+                {reviewData.memeReview.length}/150 characters
+              </div>
+            </div>
+
+            {/* Submit Button */}
+            <div className="flex gap-4 pt-4">
+              <button 
+                type="button"
+                onClick={this.hideReviewModal}
+                className="flex-1 py-3 border border-secondary text-secondary font-semibold rounded-lg hover:bg-secondary hover:text-white transition-all duration-300"
+              >
+                Cancel
+              </button>
+              <button 
+                type="submit"
+                className="flex-1 py-3 bg-primary-600 text-white font-semibold rounded-lg hover:bg-primary-700 transition-all duration-300 transform hover:scale-105"
+              >
+                Submit Review 🚀
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
-    ));
+    );
   }
 
   // Event Handlers
@@ -1332,6 +1745,7 @@ class BookHubApp extends Component {
       if (e.key === 'Escape') {
         if (this.state.showLoginModal) this.hideLoginModal();
         if (this.state.showBookModal) this.hideBookModal();
+        if (this.state.showReviewModal) this.hideReviewModal();
         if (this.state.isMobileMenuOpen) this.closeMobileMenu();
       }
     });
@@ -1563,7 +1977,7 @@ class BookHubApp extends Component {
   }
 
   render() {
-    const { currentUser, showBookModal, activeBook, activeGenre, isMobileMenuOpen, showSearchResults } = this.state;
+    const { currentUser, showBookModal, showReviewModal, activeBook, activeGenre, isMobileMenuOpen, showSearchResults } = this.state;
 
     return (
       <div className="App">
@@ -1585,6 +1999,9 @@ class BookHubApp extends Component {
             </div>
           </div>
         )}
+
+        {/* Review Modal */}
+        {this.renderReviewModal()}
 
         <div className="fixed inset-0 z-0 grid-bg"></div>
         <div id="particles-container" className="fixed inset-0 z-0"></div>
