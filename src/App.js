@@ -18,6 +18,9 @@ class BookHubApp extends Component {
       searchTerm: '',
       activeGenre: 'all',
       isMobileMenuOpen: false,
+      // New state for search functionality
+      searchResults: [],
+      showSearchResults: false,
       registerData: {
         name: '',
         username: '',
@@ -621,6 +624,40 @@ class BookHubApp extends Component {
       container.appendChild(toast);
       
       setTimeout(() => toast.classList.add('show'), 100);
+      
+      toast.querySelector('button').addEventListener('click', () => {
+        toast.classList.remove('show');
+        setTimeout(() => toast.remove(), 300);
+      });
+      
+      setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => toast.remove(), 300);
+      }, 5000);
+    }
+  }
+
+  // Book Management
+  loadSampleData = () => {
+    const { userLibrary } = this.state;
+    if (userLibrary.length === 0) {
+      const sampleLibrary = [{
+        id: '1',
+        title: 'The Great Gatsby',
+        author: 'F. Scott Fitzgerald',
+        cover: 'https://via.placeholder.com/150x200/2563eb/ffffff?text=Gatsby',
+        pages: 180,
+        currentPage: 0,
+        genre: 'Fiction',
+        status: 'to-read',
+        addedDate: new Date().toISOString()
+      }];
+      
+      this.setState({ userLibrary: sampleLibrary });
+      localStorage.setItem('user_library', JSON.stringify(sampleLibrary));
+    }
+  }
+
   addBookToLibrary = (book) => {
     const { currentUser, userLibrary } = this.state;
     
@@ -657,6 +694,78 @@ class BookHubApp extends Component {
     }
   }
 
+  // Enhanced Search Functionality
+  handleEnhancedSearch = async (searchTerm) => {
+    if (!searchTerm.trim()) {
+      this.setState({ showSearchResults: false });
+      return;
+    }
+    
+    this.showToast(`Searching for "${searchTerm}"...`, 'warning');
+    
+    try {
+      // Search Google Books API
+      const response = await fetch(
+        `${this.API_CONFIG.GOOGLE_BOOKS.BASE_URL}?q=${encodeURIComponent(searchTerm)}&key=${this.API_CONFIG.GOOGLE_BOOKS.API_KEY}&maxResults=12`
+      );
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch books from Google Books API');
+      }
+      
+      const data = await response.json();
+      
+      if (data.items && data.items.length > 0) {
+        const searchResults = data.items.map(item => {
+          const bookInfo = item.volumeInfo;
+          return {
+            id: 'google_' + item.id,
+            title: bookInfo.title || 'Unknown Title',
+            author: bookInfo.authors ? bookInfo.authors.join(', ') : 'Unknown Author',
+            cover: bookInfo.imageLinks?.thumbnail || bookInfo.imageLinks?.smallThumbnail || 'https://via.placeholder.com/150x200/666666/ffffff?text=No+Cover',
+            pages: bookInfo.pageCount || 0,
+            genre: bookInfo.categories ? bookInfo.categories[0] : 'Unknown Genre',
+            description: bookInfo.description || 'No description available',
+            contentPreview: bookInfo.previewLink ? 'Preview available' : 'No preview available',
+            rating: bookInfo.averageRating || 0,
+            reviews: bookInfo.ratingsCount || 0,
+            publishedYear: bookInfo.publishedDate ? bookInfo.publishedDate.split('-')[0] : 'Unknown',
+            language: bookInfo.language || 'en',
+            // Google Books specific
+            googleBooksId: item.id,
+            previewLink: bookInfo.previewLink,
+            infoLink: bookInfo.infoLink,
+            isGoogleBook: true
+          };
+        });
+        
+        this.setState({ 
+          searchResults: searchResults,
+          showSearchResults: true,
+          activeGenre: 'search'
+        });
+        
+        this.showToast(`Found ${searchResults.length} books matching "${searchTerm}"`, 'success');
+      } else {
+        this.showToast(`No books found for "${searchTerm}"`, 'error');
+        this.setState({ showSearchResults: false });
+      }
+    } catch (error) {
+      console.error('Search error:', error);
+      this.showToast('Search failed. Please try again.', 'error');
+      this.setState({ showSearchResults: false });
+    }
+  }
+
+  // Clear search results
+  clearSearchResults = () => {
+    this.setState({ 
+      showSearchResults: false,
+      searchResults: [],
+      activeGenre: 'all'
+    });
+  }
+
   // Book Details Modal
   showBookDetails = async (bookId) => {
     try {
@@ -668,7 +777,8 @@ class BookHubApp extends Component {
         bookData = await this.fetchBookFromGoogleAPI(bookId.replace('google_', ''));
       } else {
         bookData = this.sampleBooks.find(b => b.id === bookId) || 
-                  this.state.userLibrary.find(b => b.id === bookId);
+                  this.state.userLibrary.find(b => b.id === bookId) ||
+                  this.state.searchResults.find(b => b.id === bookId);
       }
       
       if (bookData) {
@@ -710,7 +820,8 @@ class BookHubApp extends Component {
         publishedDate: bookInfo.publishedDate,
         publisher: bookInfo.publisher,
         isbn: bookInfo.industryIdentifiers?.[0]?.identifier || 'N/A',
-        language: bookInfo.language || 'en'
+        language: bookInfo.language || 'en',
+        isGoogleBook: true
       };
     } catch (error) {
       console.error('Google Books API Error:', error);
@@ -849,6 +960,16 @@ class BookHubApp extends Component {
               </button>
             )}
             
+            {activeBook.previewLink && activeBook.isGoogleBook && (
+              <button 
+                onClick={() => window.open(activeBook.previewLink, '_blank')}
+                className="px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors duration-300 flex items-center gap-2"
+              >
+                <i className="fas fa-external-link-alt"></i>
+                Google Preview
+              </button>
+            )}
+            
             <button className="px-6 py-3 border border-accent text-accent font-semibold rounded-lg hover:bg-accent hover:text-white transition-all duration-300 flex items-center gap-2">
               <i className="fas fa-share"></i>
               Share
@@ -873,6 +994,56 @@ class BookHubApp extends Component {
           <p className="text-secondary mb-2">by {book.author}</p>
           <div className="flex items-center mb-3">
             <span className="px-2 py-1 bg-card text-xs rounded-full text-secondary">{book.genre}</span>
+          </div>
+          <div className="flex items-center mb-3">
+            <div className="star-rating" dangerouslySetInnerHTML={{ __html: this.renderStars(book.rating) }} />
+            <span className="ml-2 text-sm text-secondary">{book.rating}</span>
+          </div>
+          <p className="text-sm text-secondary mb-4 line-clamp-3">{book.description}</p>
+          <div className="flex space-x-2 w-full">
+            <button 
+              onClick={() => this.addBookToLibrary(book)}
+              className="add-to-library-btn flex-1 py-2 bg-primary-600 text-white text-sm rounded-lg hover:bg-primary-700 transition-colors duration-300"
+            >
+              Add to Library
+            </button>
+            <button 
+              onClick={() => this.showBookDetails(book.id)}
+              className="view-details-btn flex-1 py-2 border border-accent text-accent text-sm rounded-lg hover:bg-accent hover:text-white transition-all duration-300"
+            >
+              Details
+            </button>
+          </div>
+        </div>
+      </div>
+    ));
+  }
+
+  // Render Search Results
+  renderSearchResults = () => {
+    const { searchResults } = this.state;
+    
+    if (searchResults.length === 0) {
+      return (
+        <div className="col-span-full text-center py-12">
+          <i className="fas fa-search text-6xl text-secondary mb-4"></i>
+          <h3 className="text-xl font-semibold text-secondary mb-2">No books found</h3>
+          <p className="text-secondary">Try searching with different keywords</p>
+        </div>
+      );
+    }
+
+    return searchResults.map(book => (
+      <div key={book.id} className="bg-dark rounded-2xl p-6 card-hover">
+        <div className="flex flex-col items-center text-center">
+          <img src={book.cover} alt={book.title} className="book-cover mb-4 rounded-lg shadow-md" />
+          <h3 className="text-xl font-semibold text-primary-400 mb-1">{book.title}</h3>
+          <p className="text-secondary mb-2">by {book.author}</p>
+          <div className="flex items-center mb-3">
+            <span className="px-2 py-1 bg-card text-xs rounded-full text-secondary">{book.genre}</span>
+            {book.isGoogleBook && (
+              <span className="px-2 py-1 bg-blue-600 text-xs rounded-full text-white ml-2">Google Books</span>
+            )}
           </div>
           <div className="flex items-center mb-3">
             <div className="star-rating" dangerouslySetInnerHTML={{ __html: this.renderStars(book.rating) }} />
@@ -1101,25 +1272,21 @@ class BookHubApp extends Component {
   }
 
   handleSearch = (searchTerm) => {
-    if (!searchTerm.trim()) return;
-    
-    this.showToast(`Searching for "${searchTerm}"...`, 'warning');
-    
-    const filteredBooks = this.sampleBooks.filter(book => 
-      book.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      book.author.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      book.genre.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-    
-    if (filteredBooks.length > 0) {
-      this.showToast(`Found ${filteredBooks.length} books matching "${searchTerm}"`, 'success');
-    } else {
-      this.showToast(`No books found for "${searchTerm}"`, 'error');
-    }
+    this.handleEnhancedSearch(searchTerm);
   }
 
   handleGenreFilter = (genre) => {
-    this.setState({ activeGenre: genre });
+    if (genre === 'search') return; // Prevent genre filter when showing search results
+    
+    this.setState({ 
+      activeGenre: genre,
+      showSearchResults: false 
+    });
+  }
+
+  // Quick search handlers
+  handleQuickSearch = (searchTerm) => {
+    this.handleEnhancedSearch(searchTerm);
   }
 
   // Utility Methods
@@ -1396,7 +1563,7 @@ class BookHubApp extends Component {
   }
 
   render() {
-    const { currentUser, showBookModal, activeBook, activeGenre, isMobileMenuOpen } = this.state;
+    const { currentUser, showBookModal, activeBook, activeGenre, isMobileMenuOpen, showSearchResults } = this.state;
 
     return (
       <div className="App">
@@ -1502,6 +1669,15 @@ class BookHubApp extends Component {
                   </button>
                 </div>
 
+                {/* Quick Search Suggestions */}
+                <div className="flex flex-wrap gap-2 justify-center">
+                  <span className="text-sm text-secondary mr-2">Try:</span>
+                  <button onClick={() => this.handleQuickSearch('fiction')} className="px-3 py-1 bg-card text-sm rounded-full hover:bg-primary-600 transition-colors">Fiction</button>
+                  <button onClick={() => this.handleQuickSearch('mystery')} className="px-3 py-1 bg-card text-sm rounded-full hover:bg-primary-600 transition-colors">Mystery</button>
+                  <button onClick={() => this.handleQuickSearch('science fiction')} className="px-3 py-1 bg-card text-sm rounded-full hover:bg-primary-600 transition-colors">Sci-Fi</button>
+                  <button onClick={() => this.handleQuickSearch('biography')} className="px-3 py-1 bg-card text-sm rounded-full hover:bg-primary-600 transition-colors">Biography</button>
+                </div>
+
                 <div className="flex space-x-6">
                   <div className="text-center">
                     <div className="text-2xl font-bold text-primary-400">1.2K+</div>
@@ -1554,14 +1730,34 @@ class BookHubApp extends Component {
         <section id="discover" className="py-20 relative z-10">
           <div className="container mx-auto px-6">
             <div className="text-center mb-16">
-              <h2 className="text-4xl font-bold mb-4 gradient-text">Discover New Reads </h2>
+              <h2 className="text-4xl font-bold mb-4 gradient-text">
+                {showSearchResults ? 'Search Results' : 'Discover New Reads'}
+              </h2>
               <p className="text-lg text-secondary max-w-2xl mx-auto">
-                Find your next obsession! Explore books across genres and vibes.
+                {showSearchResults 
+                  ? 'Books found from Google Books API' 
+                  : 'Find your next obsession! Explore books across genres and vibes.'}
               </p>
             </div>
 
+            {/* Search Results Header */}
+            {showSearchResults && (
+              <div className="flex justify-between items-center mb-8">
+                <button 
+                  onClick={this.clearSearchResults}
+                  className="px-4 py-2 bg-card text-secondary rounded-lg hover:bg-primary-600 hover:text-white transition-colors duration-300 flex items-center gap-2"
+                >
+                  <i className="fas fa-arrow-left"></i>
+                  Back to All Books
+                </button>
+                <span className="text-secondary">
+                  Found {this.state.searchResults.length} books
+                </span>
+              </div>
+            )}
+
             <div className="flex flex-wrap gap-3 mb-8 justify-center">
-              {['all', 'indian', 'fiction', 'classics'].map(genre => (
+              {!showSearchResults && ['all', 'indian', 'fiction', 'classics'].map(genre => (
                 <button
                   key={genre}
                   onClick={() => this.handleGenreFilter(genre)}
@@ -1577,7 +1773,7 @@ class BookHubApp extends Component {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-              {this.renderDiscoverBooks()}
+              {showSearchResults ? this.renderSearchResults() : this.renderDiscoverBooks()}
             </div>
           </div>
         </section>
