@@ -54,8 +54,9 @@ class BookHubApp extends Component {
         id: '1',
         title: 'The Ramayana',
         author: 'Valmiki',
-        cover: 'https://via.placeholder.com/150x200/2563eb/ffffff?text=Ramayana',
-        pdfUrl: '/pdfs/ramayana.pdf',
+        cover: 'https://i.pinimg.com/736x/66/dd/c4/66ddc40d895208649668f74df692de0e.jpg',
+        pdfUrl: 'https://ebooks.tirumala.org/downloads/valmiki_ramayanam.pdf',
+        hindiPdfUrl: 'https://embassyofindiabangkok.gov.in/public/assets/pdf/Valmiki%20Ramayana%20aur%20Ramakien%20Ek%20Tulnamatmak%20Adhyayan.pdf',
         pages: 500,
         genre: 'indian',
         description: 'The Ramayana is an ancient Indian epic which narrates the struggle of the divine prince Rama to rescue his wife Sita from the demon king Ravana.',
@@ -70,8 +71,9 @@ class BookHubApp extends Component {
         id: '2',
         title: 'The Mahabharata',
         author: 'Vyasa',
-        cover: 'https://via.placeholder.com/150x200/06b6d4/ffffff?text=Mahabharata',
-        pdfUrl: '/pdfs/mahabharata.pdf',
+        cover: 'https://i.pinimg.com/1200x/a1/77/3d/a1773d6d0798ec7a2f938e3cf19885ea.jpg',
+        pdfUrl: 'https://ebooks.tirumala.org/downloads/the_mahabharata.pdf',
+        hindiPdfUrl: 'https://ncert.nic.in/textbook/pdf/ghmb101.pdf',
         pages: 1200,
         genre: 'indian',
         description: 'The Mahabharata is one of the two major Sanskrit epics of ancient India, detailing the legendary Kurukshetra War fought between the Pandavas and the Kauravas—cousins from the Kuru dynasty. Beyond the war, the epic explores profound themes of duty (dharma), justice, family loyalty, and the consequences of human actions, making it a cornerstone of Indian literature and philosophy.',
@@ -86,8 +88,8 @@ class BookHubApp extends Component {
         id: '3',
         title: 'To Kill a Mockingbird',
         author: 'Harper Lee',
-        cover: 'https://via.placeholder.com/150x200/10b981/ffffff?text=Mockingbird',
-        pdfUrl: '/pdfs/mockingbird.pdf',
+        cover: 'https://i.pinimg.com/736x/6f/2d/5c/6f2d5c0ffb39d41a54cf4cb0e8517778.jpg',
+        pdfUrl: 'https://www.raio.org/TKMFullText.pdf',
         pages: 281,
         genre: 'fiction',
         description: 'A gripping, heart-wrenching tale of race and identity in the American South during the 1930s.',
@@ -102,8 +104,8 @@ class BookHubApp extends Component {
         id: '4',
         title: '1984',
         author: 'George Orwell',
-        cover: 'https://via.placeholder.com/150x200/f59e0b/ffffff?text=1984',
-        pdfUrl: '/pdfs/1984.pdf',
+        cover: 'https://i.pinimg.com/736x/47/ec/55/47ec55cb4487080ea75a344228297ad2.jpg',
+        pdfUrl: 'https://ia802904.us.archive.org/6/items/NineteenEightyFour-Novel-GeorgeOrwell/orwell1984.pdf',
         pages: 328,
         genre: 'fiction',
         description: 'A dystopian social science fiction novel and cautionary tale about the dangers of totalitarianism.',
@@ -118,8 +120,8 @@ class BookHubApp extends Component {
         id: '5',
         title: 'Pride and Prejudice',
         author: 'Jane Austen',
-        cover: 'https://via.placeholder.com/150x200/ef4444/ffffff?text=P%26P',
-        pdfUrl: '/pdfs/pride-prejudice.pdf',
+        cover: 'https://i.pinimg.com/736x/82/77/ab/8277ab1138d98021f0214c1fbf8cc387.jpg',
+        pdfUrl: 'https://giove.isti.cnr.it/demo/eread/Libri/joy/Pride.pdf',
         pages: 432,
         genre: 'classics',
         description: 'A romantic novel of manners that depicts the emotional development of protagonist Elizabeth Bennet.',
@@ -680,10 +682,10 @@ class BookHubApp extends Component {
   }
 
   // PDF Preview Handler
-  handlePDFPreview = (pdfUrl) => {
+  handlePDFPreview = (pdfUrl, language = 'English') => {
     if (pdfUrl) {
       window.open(pdfUrl, '_blank');
-      this.showToast('Opening PDF preview...', 'info');
+      this.showToast(`Opening ${language} PDF preview...`, 'info');
     } else {
       this.showToast('PDF not available for this book', 'warning');
     }
@@ -716,33 +718,39 @@ class BookHubApp extends Component {
   }
 
   fetchBookFromGoogleAPI = async (bookId) => {
-    const response = await fetch(
-      `${this.API_CONFIG.GOOGLE_BOOKS.BASE_URL}/${bookId}?key=${this.API_CONFIG.GOOGLE_BOOKS.API_KEY}`
-    );
-    
-    if (!response.ok) {
-      throw new Error('Failed to fetch book details');
+    try {
+      const response = await fetch(
+        `${this.API_CONFIG.GOOGLE_BOOKS.BASE_URL}/${bookId}?key=${this.API_CONFIG.GOOGLE_BOOKS.API_KEY}`
+      );
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch book details from Google Books API');
+      }
+      
+      const data = await response.json();
+      const bookInfo = data.volumeInfo;
+      
+      return {
+        id: 'google_' + data.id,
+        title: bookInfo.title,
+        author: bookInfo.authors ? bookInfo.authors.join(', ') : 'Unknown Author',
+        cover: bookInfo.imageLinks?.thumbnail || bookInfo.imageLinks?.smallThumbnail || 'https://via.placeholder.com/150x200',
+        pages: bookInfo.pageCount || 0,
+        genre: bookInfo.categories ? bookInfo.categories[0] : 'Unknown Genre',
+        description: bookInfo.description || 'No description available',
+        contentPreview: bookInfo.previewLink ? 'Preview available' : 'No preview available',
+        rating: bookInfo.averageRating || 0,
+        reviews: bookInfo.ratingsCount || 0,
+        publishedDate: bookInfo.publishedDate,
+        publisher: bookInfo.publisher,
+        isbn: bookInfo.industryIdentifiers?.[0]?.identifier || 'N/A',
+        language: bookInfo.language || 'en'
+      };
+    } catch (error) {
+      console.error('Google Books API Error:', error);
+      this.showToast('Could not fetch book details from Google Books', 'error');
+      throw error;
     }
-    
-    const data = await response.json();
-    const bookInfo = data.volumeInfo;
-    
-    return {
-      id: 'google_' + data.id,
-      title: bookInfo.title,
-      author: bookInfo.authors ? bookInfo.authors.join(', ') : 'Unknown Author',
-      cover: bookInfo.imageLinks?.thumbnail || bookInfo.imageLinks?.smallThumbnail || 'https://via.placeholder.com/150x200',
-      pages: bookInfo.pageCount || 0,
-      genre: bookInfo.categories ? bookInfo.categories[0] : 'Unknown Genre',
-      description: bookInfo.description || 'No description available',
-      contentPreview: bookInfo.previewLink ? 'Preview available' : 'No preview available',
-      rating: bookInfo.averageRating || 0,
-      reviews: bookInfo.ratingsCount || 0,
-      publishedDate: bookInfo.publishedDate,
-      publisher: bookInfo.publisher,
-      isbn: bookInfo.industryIdentifiers?.[0]?.identifier || 'N/A',
-      language: bookInfo.language || 'en'
-    };
   }
 
   hideBookModal = () => {
@@ -804,7 +812,7 @@ class BookHubApp extends Component {
     return (
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-1 flex justify-center">
-          <img src={activeBook.cover} alt={activeBook.title} className="book-cover w-full max-w-xs" />
+          <img src={activeBook.cover} alt={activeBook.title} className="book-cover w-full max-w-xs rounded-lg shadow-lg" />
         </div>
         
         <div className="lg:col-span-2">
@@ -853,19 +861,32 @@ class BookHubApp extends Component {
               <i className="fas fa-plus"></i>
               Add to Library
             </button>
+            
+            {/* PDF Buttons */}
+            {activeBook.pdfUrl && (
+              <button 
+                onClick={() => this.handlePDFPreview(activeBook.pdfUrl, 'English')}
+                className="px-6 py-3 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition-colors duration-300 flex items-center gap-2"
+              >
+                <i className="fas fa-file-pdf"></i>
+                Read English PDF
+              </button>
+            )}
+            
+            {activeBook.hindiPdfUrl && (
+              <button 
+                onClick={() => this.handlePDFPreview(activeBook.hindiPdfUrl, 'Hindi')}
+                className="px-6 py-3 bg-orange-600 text-white font-semibold rounded-lg hover:bg-orange-700 transition-colors duration-300 flex items-center gap-2"
+              >
+                <i className="fas fa-file-pdf"></i>
+                Read Hindi PDF
+              </button>
+            )}
+            
             <button className="px-6 py-3 border border-accent text-accent font-semibold rounded-lg hover:bg-accent hover:text-white transition-all duration-300 flex items-center gap-2">
               <i className="fas fa-share"></i>
               Share
             </button>
-            {activeBook.pdfUrl && (
-              <button 
-                onClick={() => this.handlePDFPreview(activeBook.pdfUrl)}
-                className="px-6 py-3 border border-success text-success font-semibold rounded-lg hover:bg-success hover:text-white transition-all duration-300 flex items-center gap-2"
-              >
-                <i className="fas fa-file-pdf"></i>
-                Read PDF
-              </button>
-            )}
           </div>
         </div>
       </div>
@@ -881,7 +902,7 @@ class BookHubApp extends Component {
     return filteredBooks.map(book => (
       <div key={book.id} className="bg-dark rounded-2xl p-6 card-hover">
         <div className="flex flex-col items-center text-center">
-          <img src={book.cover} alt={book.title} className="book-cover mb-4" />
+          <img src={book.cover} alt={book.title} className="book-cover mb-4 rounded-lg shadow-md" />
           <h3 className="text-xl font-semibold text-primary-400 mb-1">{book.title}</h3>
           <p className="text-secondary mb-2">by {book.author}</p>
           <div className="flex items-center mb-3">
@@ -920,7 +941,7 @@ class BookHubApp extends Component {
           Trending 
         </div>
         <div className="flex flex-col items-center text-center">
-          <img src={book.cover} alt={book.title} className="book-cover mb-4" />
+          <img src={book.cover} alt={book.title} className="book-cover mb-4 rounded-lg shadow-md" />
           <h3 className="text-xl font-semibold text-primary-400 mb-1">{book.title}</h3>
           <p className="text-secondary mb-2">by {book.author}</p>
           <div className="flex items-center mb-3">
@@ -1017,7 +1038,7 @@ class BookHubApp extends Component {
     return userLibrary.map(book => (
       <div key={book.id} className="bg-dark rounded-2xl p-6 card-hover">
         <div className="flex items-start space-x-4">
-          <img src={book.cover} alt={book.title} className="book-cover" />
+          <img src={book.cover} alt={book.title} className="book-cover rounded-lg" />
           <div className="flex-1">
             <h3 className="text-xl font-semibold text-primary-400 mb-1">{book.title}</h3>
             <p className="text-secondary mb-2">by {book.author}</p>
