@@ -1948,37 +1948,37 @@ class BookHubApp extends Component {
               </div>
             </div>
 
-           // <div className="bg-dark rounded-2xl p-8 card-hover max-w-4xl mx-auto">
-             // <h3 className="text-2xl font-semibold mb-6 text-center gradient-text">2024 Reading Goals</h3>
-              //<div className="space-y-6">
-                //<div>
-                  //<div className="flex justify-between mb-2">
-                    //<span className="font-medium">Books to Read</span>
-                    //<span className="text-primary-400">8/20</span>
-                  //</div>
-                 // <div className="progress-bar">
-                   // <div className="progress-fill" style={{ width: '40%' }}></div>
-                  //</div>
-                //</div>
-                //<div>
-                  //<div className="flex justify-between mb-2">
-                    //<span className="font-medium">Pages to Read</span>
-                    //<span className="text-accent">1,234/5,000</span>
-                  //</div>
-                  //<div className="progress-bar">
-                    //<div className="progress-fill" style={{ width: '25%' }}></div>
-                  //</div>
-                //</div>
-                //<div>
-                  //<div className="flex justify-between mb-2">
-                   // <span className="font-medium">New Genres</span>
-                   // <span className="text-success">3/5</span>
-                 // </div>
-                 // <div className="progress-bar">
-                   // <div className="progress-fill" style={{ width: '60%' }}></div>
-                 // </div>
-               // </div>
-              </div>
+            /*<div className="bg-dark rounded-2xl p-8 card-hover max-w-4xl mx-auto">
+              <h3 className="text-2xl font-semibold mb-6 text-center gradient-text">2024 Reading Goals</h3>
+              <div className="space-y-6">
+                <div>
+                  <div className="flex justify-between mb-2">
+                    <span className="font-medium">Books to Read</span>
+                    <span className="text-primary-400">8/20</span>
+                  </div>
+                  <div className="progress-bar">
+                    <div className="progress-fill" style={{ width: '40%' }}></div>
+                  </div>
+                </div>
+                <div>
+                  <div className="flex justify-between mb-2">
+                    <span className="font-medium">Pages to Read</span>
+                    <span className="text-accent">1,234/5,000</span>
+                  </div>
+                  <div className="progress-bar">
+                    <div className="progress-fill" style={{ width: '25%' }}></div>
+                  </div>
+                </div>
+                <div>
+                  <div className="flex justify-between mb-2">
+                    <span className="font-medium">New Genres</span>
+                    <span className="text-success">3/5</span>
+                  </div>
+                  <div className="progress-bar">
+                    <div className="progress-fill" style={{ width: '60%' }}></div>
+                  </div>
+                </div>
+              </div>*/
             </div>
           </div>
         </section>
