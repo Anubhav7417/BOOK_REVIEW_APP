@@ -18,10 +18,8 @@ class BookHubApp extends Component {
       searchTerm: '',
       activeGenre: 'all',
       isMobileMenuOpen: false,
-      // New state for search functionality
       searchResults: [],
       showSearchResults: false,
-      // New state for review system
       showReviewModal: false,
       reviewData: {
         rating: 0,
@@ -87,8 +85,8 @@ class BookHubApp extends Component {
         hindiPdfUrl: 'https://ncert.nic.in/textbook/pdf/ghmb101.pdf',
         pages: 1200,
         genre: 'indian',
-        description: 'The Mahabharata is one of the two major Sanskrit epics of ancient India, detailing the legendary Kurukshetra War fought between the Pandavas and the Kauravas—cousins from the Kuru dynasty. Beyond the war, the epic explores profound themes of duty (dharma), justice, family loyalty, and the consequences of human actions, making it a cornerstone of Indian literature and philosophy.',
-        contentPreview: 'The epic begins with King Shantanu of Hastinapura, who falls in love with the river goddess Ganga. Their union leads to the birth of Bhishma, a key figure in the unfolding saga. As generations pass, rivalries grow between Shantanu\'s descendants—the Pandavas and the Kauravas—eventually culminating in a great war that tests the values of truth, honor, and destiny.',
+        description: 'The Mahabharata is one of the two major Sanskrit epics of ancient India, detailing the legendary Kurukshetra War fought between the Pandavas and the Kauravas.',
+        contentPreview: 'The epic begins with King Shantanu of Hastinapura, who falls in love with the river goddess Ganga...',
         rating: 4.8,
         reviews: 76,
         trending: true,
@@ -110,38 +108,6 @@ class BookHubApp extends Component {
         trending: false,
         publishedYear: '1960',
         language: 'English'
-      },
-      {
-        id: '4',
-        title: '1984',
-        author: 'George Orwell',
-        cover: 'https://i.pinimg.com/736x/47/ec/55/47ec55cb4487080ea75a344228297ad2.jpg',
-        pdfUrl: 'https://ia802904.us.archive.org/6/items/NineteenEightyFour-Novel-GeorgeOrwell/orwell1984.pdf',
-        pages: 328,
-        genre: 'fiction',
-        description: 'A dystopian social science fiction novel and cautionary tale about the dangers of totalitarianism.',
-        contentPreview: 'It was a bright cold day in April, and the clocks were striking thirteen...',
-        rating: 4.6,
-        reviews: 267,
-        trending: true,
-        publishedYear: '1949',
-        language: 'English'
-      },
-      {
-        id: '5',
-        title: 'Pride and Prejudice',
-        author: 'Jane Austen',
-        cover: 'https://i.pinimg.com/736x/82/77/ab/8277ab1138d98021f0214c1fbf8cc387.jpg',
-        pdfUrl: 'https://giove.isti.cnr.it/demo/eread/Libri/joy/Pride.pdf',
-        pages: 432,
-        genre: 'classics',
-        description: 'A romantic novel of manners that depicts the emotional development of protagonist Elizabeth Bennet.',
-        contentPreview: 'It is a truth universally acknowledged, that a single man in possession of a good fortune, must be in want of a wife...',
-        rating: 4.5,
-        reviews: 198,
-        trending: false,
-        publishedYear: '1813',
-        language: 'English'
       }
     ];
 
@@ -154,23 +120,10 @@ class BookHubApp extends Component {
         userAvatar: 'https://ui-avatars.com/api/?name=Ravi&background=2563eb&color=fff',
         rating: 5,
         title: 'Timeless Epic! 🙏',
-        content: 'The Ramayana is not just a story, it\'s a way of life. The characters, the values, the teachings - everything about this epic is profound. Must read for every Indian!',
+        content: 'The Ramayana is not just a story, it\'s a way of life. The characters, the values, the teachings - everything about this epic is profound.',
         date: '2024-01-15',
         likes: 45,
         memeReview: 'When you realize Ramayana has more plot twists than your favorite Netflix show 😂'
-      },
-      {
-        id: '2',
-        bookId: '2',
-        userId: 'user456',
-        userName: 'MythologyLover',
-        userAvatar: 'https://ui-avatars.com/api/?name=Priya&background=06b6d4&color=fff',
-        rating: 5,
-        title: 'Epic of Epics!!!',
-        content: 'The Mahabharata is everything - philosophy, politics, war, relationships. The Bhagavad Gita alone is worth reading this massive epic for. Life-changing!',
-        date: '2024-02-20',
-        likes: 67,
-        memeReview: 'When someone says they finished Mahabharata in a week 👀 #Cap'
       }
     ];
   }
@@ -189,7 +142,7 @@ class BookHubApp extends Component {
     this.clearSessionTimer();
   }
 
-  // Enhanced Security Methods
+  // Security Methods
   generateEncryptionKey = () => {
     const existingKey = localStorage.getItem('encryption_key');
     if (existingKey) return existingKey;
@@ -370,9 +323,9 @@ class BookHubApp extends Component {
     if (admins.length === 0) {
       const newAdmins = [...admins, {
         id: 1,
-        username: 'admin',
-        password: this.hashPassword('Admin@123Secure'),
-        securityCode: 'ADMIN2024SECURE',
+        username: 'Neurix',
+        password: this.hashPassword('Neurix@7217secure'),
+        securityCode: 'PasswordHighzacked',
         createdAt: new Date().toISOString(),
         lastLogin: null,
         isActive: true,
@@ -603,7 +556,7 @@ class BookHubApp extends Component {
     this.setState({ isMobileMenuOpen: false });
   }
 
-  // Review System Methods
+  // Review System Methods - FIXED
   showReviewModal = (book = null) => {
     if (!this.state.currentUser) {
       this.showToast('Please login to write a review', 'warning');
@@ -630,16 +583,17 @@ class BookHubApp extends Component {
     });
   }
 
+  // FIXED: Properly handle review input changes
   handleReviewInputChange = (field, value) => {
-    const sanitizedValue = this.sanitizeInput(value);
     this.setState(prevState => ({
       reviewData: {
         ...prevState.reviewData,
-        [field]: sanitizedValue
+        [field]: value
       }
     }));
   }
 
+  // FIXED: Proper star rating setter
   setRating = (rating) => {
     this.setState(prevState => ({
       reviewData: {
@@ -649,6 +603,7 @@ class BookHubApp extends Component {
     }));
   }
 
+  // FIXED: Submit review function
   submitReview = (e) => {
     e.preventDefault();
     const { currentUser, activeBook, reviewData, userReviews } = this.state;
@@ -690,11 +645,12 @@ class BookHubApp extends Component {
       userName: currentUser.name,
       userAvatar: currentUser.avatar,
       rating: reviewData.rating,
-      title: reviewData.title,
-      content: reviewData.content,
-      memeReview: reviewData.memeReview || 'This book gave me all the feels! 📚✨',
+      title: this.sanitizeInput(reviewData.title),
+      content: this.sanitizeInput(reviewData.content),
+      memeReview: this.sanitizeInput(reviewData.memeReview) || 'This book gave me all the feels! 📚✨',
       date: new Date().toISOString().split('T')[0],
-      likes: 0
+      likes: 0,
+      likedBy: []
     };
 
     const newUserReviews = [...userReviews, newReview];
@@ -748,11 +704,10 @@ class BookHubApp extends Component {
 
   // Input Handlers
   handleInputChange = (form, field, value) => {
-    const sanitizedValue = this.sanitizeInput(value);
     this.setState(prevState => ({
       [form]: {
         ...prevState[form],
-        [field]: sanitizedValue
+        [field]: value
       }
     }));
   }
@@ -861,7 +816,6 @@ class BookHubApp extends Component {
     this.showToast(`Searching for "${searchTerm}"...`, 'warning');
     
     try {
-      // Search Google Books API
       const response = await fetch(
         `${this.API_CONFIG.GOOGLE_BOOKS.BASE_URL}?q=${encodeURIComponent(searchTerm)}&key=${this.API_CONFIG.GOOGLE_BOOKS.API_KEY}&maxResults=12`
       );
@@ -888,7 +842,6 @@ class BookHubApp extends Component {
             reviews: bookInfo.ratingsCount || 0,
             publishedYear: bookInfo.publishedDate ? bookInfo.publishedDate.split('-')[0] : 'Unknown',
             language: bookInfo.language || 'en',
-            // Google Books specific
             googleBooksId: item.id,
             previewLink: bookInfo.previewLink,
             infoLink: bookInfo.infoLink,
@@ -1017,30 +970,26 @@ class BookHubApp extends Component {
     this.applyTheme(newTheme);
   }
 
-  // Render Methods
+  // FIXED: Render Stars Method
   renderStars = (rating, interactive = false, onStarClick = null) => {
-    let stars = '';
-    for (let i = 1; i <= 5; i++) {
-      if (i <= Math.floor(rating)) {
-        stars += `<i class="fas fa-star text-yellow-400 ${interactive ? 'cursor-pointer hover:scale-110' : ''}" data-rating="${i}"></i>`;
-      } else if (i - 0.5 <= rating) {
-        stars += `<i class="fas fa-star-half-alt text-yellow-400 ${interactive ? 'cursor-pointer hover:scale-110' : ''}" data-rating="${i}"></i>`;
-      } else {
-        stars += `<i class="far fa-star text-yellow-400 ${interactive ? 'cursor-pointer hover:scale-110' : ''}" data-rating="${i}"></i>`;
-      }
-    }
-    
-    const starElement = document.createElement('div');
-    starElement.className = 'star-rating';
-    starElement.innerHTML = stars;
-    
-    if (interactive && onStarClick) {
-      starElement.querySelectorAll('i').forEach(star => {
-        star.addEventListener('click', () => onStarClick(parseInt(star.getAttribute('data-rating'))));
-      });
-    }
-    
-    return starElement.innerHTML;
+    return (
+      <div className="star-rating">
+        {[1, 2, 3, 4, 5].map((star) => (
+          <i
+            key={star}
+            className={
+              star <= rating
+                ? "fas fa-star text-yellow-400"
+                : star - 0.5 <= rating
+                ? "fas fa-star-half-alt text-yellow-400"
+                : "far fa-star text-yellow-400"
+            }
+            style={interactive ? { cursor: 'pointer' } : {}}
+            onClick={interactive ? () => onStarClick(star) : undefined}
+          />
+        ))}
+      </div>
+    );
   }
 
   renderBookDetailsModal = () => {
@@ -1054,7 +1003,6 @@ class BookHubApp extends Component {
       );
     }
 
-    // Get reviews for this book
     const bookReviews = userReviews.filter(review => review.bookId === activeBook.id);
     const userHasReviewed = currentUser && bookReviews.some(review => review.userId === currentUser.id);
 
@@ -1069,7 +1017,7 @@ class BookHubApp extends Component {
           <p className="text-xl text-secondary mb-4">by {activeBook.author}</p>
           
           <div className="flex items-center mb-6">
-            <div className="star-rating text-2xl" dangerouslySetInnerHTML={{ __html: this.renderStars(activeBook.rating) }} />
+            {this.renderStars(activeBook.rating)}
             <span className="ml-3 text-lg font-semibold">{activeBook.rating}/5</span>
             <span className="ml-2 text-secondary">({activeBook.reviews} reviews)</span>
           </div>
@@ -1111,7 +1059,6 @@ class BookHubApp extends Component {
               Add to Library
             </button>
             
-            {/* PDF Buttons */}
             {activeBook.pdfUrl && (
               <button 
                 onClick={() => this.handlePDFPreview(activeBook.pdfUrl, 'English')}
@@ -1170,7 +1117,7 @@ class BookHubApp extends Component {
                           <div>
                             <h4 className="font-semibold text-primary-400">{review.userName}</h4>
                             <div className="flex items-center mt-1">
-                              <div className="star-rating text-sm" dangerouslySetInnerHTML={{ __html: this.renderStars(review.rating) }} />
+                              {this.renderStars(review.rating)}
                             </div>
                           </div>
                           <div className="text-sm text-secondary">{review.date}</div>
@@ -1239,7 +1186,7 @@ class BookHubApp extends Component {
               )}
             </div>
             <div className="flex items-center mb-3">
-              <div className="star-rating" dangerouslySetInnerHTML={{ __html: this.renderStars(book.rating) }} />
+              {this.renderStars(book.rating)}
               <span className="ml-2 text-sm text-secondary">{book.rating}</span>
             </div>
             <p className="text-sm text-secondary mb-4 line-clamp-3">{book.description}</p>
@@ -1308,7 +1255,7 @@ class BookHubApp extends Component {
               )}
             </div>
             <div className="flex items-center mb-3">
-              <div className="star-rating" dangerouslySetInnerHTML={{ __html: this.renderStars(book.rating) }} />
+              {this.renderStars(book.rating)}
               <span className="ml-2 text-sm text-secondary">{book.rating}</span>
             </div>
             <p className="text-sm text-secondary mb-4 line-clamp-3">{book.description}</p>
@@ -1356,7 +1303,7 @@ class BookHubApp extends Component {
           <h3 className="text-xl font-semibold text-primary-400 mb-1">{book.title}</h3>
           <p className="text-secondary mb-2">by {book.author}</p>
           <div className="flex items-center mb-3">
-            <div className="star-rating" dangerouslySetInnerHTML={{ __html: this.renderStars(book.rating) }} />
+            {this.renderStars(book.rating)}
             <span className="ml-2 text-sm text-secondary">{book.rating} ({book.reviews} reviews)</span>
           </div>
           <p className="text-sm text-secondary mb-4 line-clamp-2">{book.description}</p>
@@ -1381,7 +1328,7 @@ class BookHubApp extends Component {
 
   renderReviews = () => {
     const { userReviews, currentUser } = this.state;
-    const allReviews = [...userReviews].reverse(); // Show latest reviews first
+    const allReviews = [...userReviews].reverse();
 
     return allReviews.map(review => {
       const book = this.sampleBooks.find(b => b.id === review.bookId) || 
@@ -1402,7 +1349,7 @@ class BookHubApp extends Component {
                 <div className="text-sm text-secondary">{review.date}</div>
               </div>
               <div className="flex items-center mt-2">
-                <div className="star-rating" dangerouslySetInnerHTML={{ __html: this.renderStars(review.rating) }} />
+                {this.renderStars(review.rating)}
               </div>
             </div>
           </div>
@@ -1517,103 +1464,111 @@ class BookHubApp extends Component {
     });
   }
 
-  // Review Modal
+  // FIXED: Review Modal - More Compact
   renderReviewModal = () => {
     const { showReviewModal, activeBook, reviewData, currentUser } = this.state;
 
     if (!showReviewModal || !activeBook) return null;
 
     return (
-      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 animate-fade-in-up">
-        <div className="bg-card rounded-2xl p-8 max-w-2xl w-full mx-4 card-hover relative max-h-[90vh] overflow-y-auto">
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 animate-fade-in-up p-4">
+        <div className="bg-card rounded-xl p-6 max-w-md w-full mx-auto card-hover relative max-h-[85vh] overflow-y-auto">
           <button 
             onClick={this.hideReviewModal}
-            className="absolute top-4 right-4 text-secondary hover:text-primary-400 transition-colors duration-300 text-xl"
+            className="absolute top-3 right-3 text-secondary hover:text-primary-400 transition-colors duration-300 text-lg"
           >
             <i className="fas fa-times"></i>
           </button>
 
-          <h3 className="text-2xl font-semibold mb-2 text-center gradient-text">Write a Review</h3>
-          <p className="text-center text-secondary mb-6">for "{activeBook.title}" by {activeBook.author}</p>
+          <h3 className="text-xl font-semibold mb-2 text-center">Write a Review</h3>
+          <p className="text-center text-secondary text-sm mb-4">for "{activeBook.title}"</p>
 
-          <form onSubmit={this.submitReview} className="space-y-6">
-            {/* Star Rating */}
+          <form onSubmit={this.submitReview} className="space-y-4">
+            {/* Star Rating - FIXED */}
             <div className="text-center">
-              <label className="block text-sm font-semibold mb-4">Your Rating</label>
-              <div 
-                className="star-rating text-3xl mb-2"
-                dangerouslySetInnerHTML={{ 
-                  __html: this.renderStars(reviewData.rating, true, this.setRating) 
-                }}
-              />
-              <p className="text-sm text-secondary">
+              <label className="block text-sm font-semibold mb-2">Your Rating</label>
+              <div className="star-rating text-2xl mb-2">
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <i
+                    key={star}
+                    className={
+                      star <= reviewData.rating
+                        ? "fas fa-star text-yellow-400 cursor-pointer"
+                        : "far fa-star text-yellow-400 cursor-pointer"
+                    }
+                    onClick={() => this.setRating(star)}
+                    style={{ margin: '0 2px' }}
+                  />
+                ))}
+              </div>
+              <p className="text-xs text-secondary">
                 {reviewData.rating === 0 ? 'Select your rating' : `${reviewData.rating} out of 5 stars`}
               </p>
             </div>
 
             {/* Review Title */}
             <div>
-              <label className="block text-sm font-semibold mb-2">Review Title</label>
+              <label className="block text-sm font-semibold mb-1">Review Title</label>
               <input 
                 type="text" 
                 value={reviewData.title}
                 onChange={(e) => this.handleReviewInputChange('title', e.target.value)}
                 required 
-                className="w-full px-4 py-3 bg-dark border border-card rounded-lg focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 transition-all duration-300" 
-                placeholder="Give your review a catchy title..." 
-                maxLength="100"
+                className="w-full px-3 py-2 bg-dark border border-card rounded-lg focus:border-primary-500 focus:ring-1 focus:ring-primary-500/20 transition-all duration-300 text-sm" 
+                placeholder="Give your review a title..." 
+                maxLength="60"
               />
             </div>
 
             {/* Review Content */}
             <div>
-              <label className="block text-sm font-semibold mb-2">Your Review</label>
+              <label className="block text-sm font-semibold mb-1">Your Review</label>
               <textarea 
                 value={reviewData.content}
                 onChange={(e) => this.handleReviewInputChange('content', e.target.value)}
                 required 
-                rows="5"
-                className="w-full px-4 py-3 bg-dark border border-card rounded-lg focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 transition-all duration-300 resize-none" 
-                placeholder="Share your thoughts about this book... What did you like or dislike? Would you recommend it?"
-                maxLength="1000"
+                rows="3"
+                className="w-full px-3 py-2 bg-dark border border-card rounded-lg focus:border-primary-500 focus:ring-1 focus:ring-primary-500/20 transition-all duration-300 resize-none text-sm" 
+                placeholder="Share your thoughts about this book..."
+                maxLength="500"
               />
-              <div className="text-right text-sm text-secondary mt-1">
-                {reviewData.content.length}/1000 characters
+              <div className="text-right text-xs text-secondary mt-1">
+                {reviewData.content.length}/500 characters
               </div>
             </div>
 
             {/* Meme Review (Optional) */}
             <div>
-              <label className="block text-sm font-semibold mb-2">
-                Vibe Check (Optional) 💫
+              <label className="block text-sm font-semibold mb-1">
+                Vibe Check (Optional)
               </label>
               <input 
                 type="text" 
                 value={reviewData.memeReview}
                 onChange={(e) => this.handleReviewInputChange('memeReview', e.target.value)}
-                className="w-full px-4 py-3 bg-dark border border-card rounded-lg focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 transition-all duration-300" 
-                placeholder="Add a funny one-liner or meme caption about this book..."
-                maxLength="150"
+                className="w-full px-3 py-2 bg-dark border border-card rounded-lg focus:border-primary-500 focus:ring-1 focus:ring-primary-500/20 transition-all duration-300 text-sm" 
+                placeholder="Add a funny one-liner..."
+                maxLength="100"
               />
-              <div className="text-right text-sm text-secondary mt-1">
-                {reviewData.memeReview.length}/150 characters
+              <div className="text-right text-xs text-secondary mt-1">
+                {reviewData.memeReview.length}/100 characters
               </div>
             </div>
 
             {/* Submit Button */}
-            <div className="flex gap-4 pt-4">
+            <div className="flex gap-3 pt-2">
               <button 
                 type="button"
                 onClick={this.hideReviewModal}
-                className="flex-1 py-3 border border-secondary text-secondary font-semibold rounded-lg hover:bg-secondary hover:text-white transition-all duration-300"
+                className="flex-1 py-2 border border-secondary text-secondary font-semibold rounded-lg hover:bg-secondary hover:text-white transition-all duration-300 text-sm"
               >
                 Cancel
               </button>
               <button 
                 type="submit"
-                className="flex-1 py-3 bg-primary-600 text-white font-semibold rounded-lg hover:bg-primary-700 transition-all duration-300 transform hover:scale-105"
+                className="flex-1 py-2 bg-primary-600 text-white font-semibold rounded-lg hover:bg-primary-700 transition-all duration-300 text-sm"
               >
-                Submit Review 🚀
+                Submit Review
               </button>
             </div>
           </form>
@@ -1689,7 +1644,7 @@ class BookHubApp extends Component {
   }
 
   handleGenreFilter = (genre) => {
-    if (genre === 'search') return; // Prevent genre filter when showing search results
+    if (genre === 'search') return;
     
     this.setState({ 
       activeGenre: genre,
@@ -2070,7 +2025,7 @@ class BookHubApp extends Component {
                     Read, Review, <span className="gradient-text">Vibe</span>
                   </h1>
                   <p className="text-lg text-secondary leading-relaxed max-w-2xl">
-                    Join the lit reading community! Track your books, drop fire reviews, and connect with fellow bookworms. No cap, it's the best reading app out there!!!
+                    Join the lit reading community! Track your books, drop fire reviews, and connect with fellow bookworms.
                   </p>
                 </div>
 
@@ -2085,16 +2040,6 @@ class BookHubApp extends Component {
                     <i className="fas fa-search text-xl"></i>
                   </button>
                 </div>
-
-                {/* Quick Search Suggestions */}
-                <div className="flex flex-wrap gap-2 justify-center">
-                  <span className="text-sm text-secondary mr-2">Try:</span>
-                  <button onClick={() => this.handleQuickSearch('fiction')} className="px-3 py-1 bg-card text-sm rounded-full hover:bg-primary-600 transition-colors">Fiction</button>
-                  <button onClick={() => this.handleQuickSearch('mystery')} className="px-3 py-1 bg-card text-sm rounded-full hover:bg-primary-600 transition-colors">Mystery</button>
-                  <button onClick={() => this.handleQuickSearch('science fiction')} className="px-3 py-1 bg-card text-sm rounded-full hover:bg-primary-600 transition-colors">Sci-Fi</button>
-                  <button onClick={() => this.handleQuickSearch('biography')} className="px-3 py-1 bg-card text-sm rounded-full hover:bg-primary-600 transition-colors">Biography</button>
-                </div>
-
                 <div className="flex space-x-6">
                   <div className="text-center">
                     <div className="text-2xl font-bold text-primary-400">1.2K+</div>
