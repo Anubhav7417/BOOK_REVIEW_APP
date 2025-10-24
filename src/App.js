@@ -228,7 +228,6 @@ class BookHubApp extends Component {
       }
     }, this.sessionTimeout);
   }
-
   clearSessionTimer = () => {
     if (this.sessionTimer) {
       clearTimeout(this.sessionTimer);
