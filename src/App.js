@@ -118,7 +118,6 @@ class BookHubApp extends Component {
         language: 'English'
       }
     ];
-
     this.sampleReviews = [
       {
         id: '1',
