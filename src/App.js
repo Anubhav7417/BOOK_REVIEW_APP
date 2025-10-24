@@ -355,7 +355,6 @@ class BookHubApp extends Component {
     const user = users.find(u => 
       u.username === sanitizedIdentifier || u.email === sanitizedIdentifier
     );
-
     if (!user) {
       this.recordFailedAttempt(sanitizedIdentifier);
       return { success: false, message: 'Invalid credentials' };
