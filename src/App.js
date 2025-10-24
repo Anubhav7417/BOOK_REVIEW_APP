@@ -136,7 +136,6 @@ class BookHubApp extends Component {
       }
     ];
   }
-
   componentDidMount() {
     this.initializeDefaultAdmin();
     this.initializeTheme();
