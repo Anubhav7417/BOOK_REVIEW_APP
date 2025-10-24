@@ -66,7 +66,6 @@ class BookHubApp extends Component {
         API_KEY: 'AIzaSyCpqKevtXzm-SuF62BqwQztTvFRB2g3Cd4'
       }
     };
-
     this.sampleBooks = [
       {
         id: '1',
