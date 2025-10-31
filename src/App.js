@@ -46,8 +46,10 @@ class BookHubApp extends Component {
       failedAttempts: JSON.parse(localStorage.getItem('failed_attempts')) || {},
       isLocked: false,
       lockUntil: JSON.parse(localStorage.getItem('lock_until')) || 0,
+      // NEW: Library filter and sort states
       libraryFilter: 'all',
       librarySort: 'title',
+      // NEW: Update progress modal state
       showProgressModal: false,
       progressData: {
         currentPage: 0,
@@ -132,7 +134,6 @@ class BookHubApp extends Component {
       }
     ];
   }
-
   componentDidMount() {
     this.initializeDefaultAdmin();
     this.initializeTheme();
@@ -146,6 +147,7 @@ class BookHubApp extends Component {
     this.clearSessionTimer();
   }
 
+  // Security Methods
   generateEncryptionKey = () => {
     const existingKey = localStorage.getItem('encryption_key');
     if (existingKey) return existingKey;
@@ -165,6 +167,7 @@ class BookHubApp extends Component {
     return this.hashPassword(password) === hashedPassword;
   }
 
+  // Account Lock Security
   checkAccountLock = () => {
     const { lockUntil } = this.state;
     const now = Date.now();
@@ -213,6 +216,7 @@ class BookHubApp extends Component {
     localStorage.setItem('failed_attempts', JSON.stringify(newFailedAttempts));
   }
 
+  // Session Management
   setupSessionTimer = () => {
     this.sessionTimer = setTimeout(() => {
       if (this.state.currentUser) {
@@ -221,7 +225,6 @@ class BookHubApp extends Component {
       }
     }, this.sessionTimeout);
   }
-
   clearSessionTimer = () => {
     if (this.sessionTimer) {
       clearTimeout(this.sessionTimer);
@@ -233,6 +236,7 @@ class BookHubApp extends Component {
     this.setupSessionTimer();
   }
 
+  // Input Sanitization
   sanitizeInput = (input) => {
     if (typeof input !== 'string') return input;
     return input
@@ -317,6 +321,7 @@ class BookHubApp extends Component {
     return { strength, hints };
   }
 
+  // Enhanced Authentication Methods
   initializeDefaultAdmin = () => {
     const { admins } = this.state;
     if (admins.length === 0) {
@@ -450,6 +455,7 @@ class BookHubApp extends Component {
     return { success: true, user: currentUser };
   }
 
+  // Enhanced User Registration
   registerUser = (userData) => {
     const { users } = this.state;
     
@@ -509,6 +515,7 @@ class BookHubApp extends Component {
     return { success: true, user: newUser };
   }
 
+  // UI Management
   showLoginModal = () => {
     this.setState({ 
       showLoginModal: true,
@@ -541,6 +548,7 @@ class BookHubApp extends Component {
     });
   }
 
+  // Mobile Menu Toggle
   toggleMobileMenu = () => {
     this.setState(prevState => ({
       isMobileMenuOpen: !prevState.isMobileMenuOpen
@@ -551,12 +559,15 @@ class BookHubApp extends Component {
     this.setState({ isMobileMenuOpen: false });
   }
 
+  // NEW: Handle Add Book - Redirect to Search
   handleAddBook = () => {
+    // Scroll to discover section and focus search
     const discoverSection = document.getElementById('discover');
     if (discoverSection) {
       discoverSection.scrollIntoView({ behavior: 'smooth' });
     }
     
+    // Focus search input after a small delay
     setTimeout(() => {
       const searchInput = document.querySelector('input[placeholder*="Search for books"]');
       if (searchInput) {
@@ -567,6 +578,7 @@ class BookHubApp extends Component {
     this.showToast('Search for books to add to your library!', 'info');
   }
 
+  // NEW: Library Filter and Sort Functions
   handleLibraryFilter = (filter) => {
     this.setState({ libraryFilter: filter });
   }
@@ -575,15 +587,18 @@ class BookHubApp extends Component {
     this.setState({ librarySort: sort });
   }
 
+  // NEW: Get filtered and sorted library
   getFilteredSortedLibrary = () => {
     const { userLibrary, libraryFilter, librarySort } = this.state;
     
     let filtered = userLibrary;
     
+    // Apply filter
     if (libraryFilter !== 'all') {
       filtered = userLibrary.filter(book => book.status === libraryFilter);
     }
     
+    // Apply sort
     const sorted = [...filtered].sort((a, b) => {
       switch (librarySort) {
         case 'title':
@@ -602,6 +617,7 @@ class BookHubApp extends Component {
     return sorted;
   }
 
+  // NEW: Update Progress Functions
   showProgressModal = (book) => {
     this.setState({ 
       showProgressModal: true,
@@ -659,6 +675,7 @@ class BookHubApp extends Component {
     this.showToast('Progress updated successfully!', 'success');
   }
 
+  // Review System Methods
   showReviewModal = (book = null) => {
     if (!this.state.currentUser) {
       this.showToast('Please login to write a review', 'warning');
@@ -797,6 +814,7 @@ class BookHubApp extends Component {
     localStorage.setItem('user_reviews', JSON.stringify(updatedReviews));
   }
 
+  // Input Handlers
   handleInputChange = (form, field, value) => {
     this.setState(prevState => ({
       [form]: {
@@ -806,6 +824,7 @@ class BookHubApp extends Component {
     }));
   }
 
+  // Toast Notifications
   showToast = (message, type = 'success') => {
     const toast = document.createElement('div');
     toast.className = `toast ${type}`;
@@ -836,8 +855,11 @@ class BookHubApp extends Component {
     }
   }
 
+  // Book Management
   loadSampleData = () => {
     const { userLibrary, userReviews } = this.state;
+    
+    // REMOVED: The Great Gatsby sample book
     
     if (userReviews.length === 0) {
       const allReviews = [...this.sampleReviews];
@@ -873,6 +895,7 @@ class BookHubApp extends Component {
     }
   }
 
+  // PDF Preview Handler
   handlePDFPreview = (pdfUrl, language = 'English') => {
     if (pdfUrl) {
       window.open(pdfUrl, '_blank');
@@ -882,6 +905,7 @@ class BookHubApp extends Component {
     }
   }
 
+  // Enhanced Search Functionality
   handleEnhancedSearch = async (searchTerm) => {
     if (!searchTerm.trim()) {
       this.setState({ showSearchResults: false });
@@ -942,6 +966,7 @@ class BookHubApp extends Component {
     }
   }
 
+  // Clear search results
   clearSearchResults = () => {
     this.setState({ 
       showSearchResults: false,
@@ -950,6 +975,7 @@ class BookHubApp extends Component {
     });
   }
 
+  // Book Details Modal
   showBookDetails = async (bookId) => {
     try {
       this.setState({ showBookModal: true, activeBook: null });
@@ -1017,6 +1043,7 @@ class BookHubApp extends Component {
     this.setState({ showBookModal: false, activeBook: null });
   }
 
+  // Theme Management
   initializeTheme = () => {
     const savedTheme = localStorage.getItem('bookhub_theme') || 'dark';
     this.applyTheme(savedTheme);
@@ -1030,8 +1057,8 @@ class BookHubApp extends Component {
     document.documentElement.classList.remove('dark', 'light');
     document.documentElement.classList.add(theme);
     document.body.className = theme === 'dark' ? 
-      'bg-slate-900 text-white min-h-screen relative overflow-x-hidden dark' : 
-      'bg-white text-slate-900 min-h-screen relative overflow-x-hidden light';
+      'bg-dark text-light min-h-screen relative overflow-x-hidden dark' : 
+      'bg-light text-dark min-h-screen relative overflow-x-hidden light';
     
     localStorage.setItem('bookhub_theme', theme);
   }
@@ -1042,6 +1069,7 @@ class BookHubApp extends Component {
     this.applyTheme(newTheme);
   }
 
+  // Render Stars Method
   renderStars = (rating, interactive = false, onStarClick = null) => {
     return (
       <div className="star-rating">
@@ -1063,6 +1091,7 @@ class BookHubApp extends Component {
     );
   }
 
+  // NEW: Render Progress Modal
   renderProgressModal = () => {
     const { showProgressModal, activeBook, progressData } = this.state;
 
@@ -1073,24 +1102,25 @@ class BookHubApp extends Component {
 
     return (
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 animate-fade-in-up p-4">
-        <div className="bg-slate-800 rounded-xl p-6 max-w-md w-full mx-auto card-hover relative">
+        <div className="bg-card rounded-xl p-6 max-w-md w-full mx-auto card-hover relative">
           <button 
             onClick={this.hideProgressModal}
-            className="absolute top-3 right-3 text-slate-400 hover:text-blue-400 transition-colors duration-300 text-lg"
+            className="absolute top-3 right-3 text-secondary hover:text-primary-400 transition-colors duration-300 text-lg"
           >
             <i className="fas fa-times"></i>
           </button>
 
-          <h3 className="text-xl font-semibold mb-2 text-center text-white">Update Reading Progress</h3>
-          <p className="text-center text-slate-400 text-sm mb-4">for "{activeBook.title}"</p>
+          <h3 className="text-xl font-semibold mb-2 text-center">Update Reading Progress</h3>
+          <p className="text-center text-secondary text-sm mb-4">for "{activeBook.title}"</p>
 
           <form onSubmit={this.updateBookProgress} className="space-y-4">
+            {/* Status Selection */}
             <div>
-              <label className="block text-sm font-semibold mb-2 text-white">Reading Status</label>
+              <label className="block text-sm font-semibold mb-2">Reading Status</label>
               <select 
                 value={progressData.status}
                 onChange={(e) => this.handleProgressInputChange('status', e.target.value)}
-                className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 transition-all duration-300 text-sm text-white"
+                className="w-full px-3 py-2 bg-dark border border-card rounded-lg focus:border-primary-500 focus:ring-1 focus:ring-primary-500/20 transition-all duration-300 text-sm"
               >
                 <option value="to-read">To Read</option>
                 <option value="reading">Currently Reading</option>
@@ -1098,8 +1128,9 @@ class BookHubApp extends Component {
               </select>
             </div>
 
+            {/* Current Page Input */}
             <div>
-              <label className="block text-sm font-semibold mb-2 text-white">
+              <label className="block text-sm font-semibold mb-2">
                 Current Page (Total: {activeBook.pages})
               </label>
               <input 
@@ -1108,40 +1139,42 @@ class BookHubApp extends Component {
                 max={activeBook.pages}
                 value={progressData.currentPage}
                 onChange={(e) => this.handleProgressInputChange('currentPage', e.target.value)}
-                className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 transition-all duration-300 text-sm text-white" 
+                className="w-full px-3 py-2 bg-dark border border-card rounded-lg focus:border-primary-500 focus:ring-1 focus:ring-primary-500/20 transition-all duration-300 text-sm" 
                 placeholder={`Enter current page (0-${activeBook.pages})`}
               />
             </div>
 
+            {/* Progress Display */}
             {progressData.currentPage > 0 && (
-              <div className="bg-slate-900 rounded-lg p-3">
+              <div className="bg-dark rounded-lg p-3">
                 <div className="flex justify-between mb-1">
-                  <span className="text-sm text-slate-400">Progress</span>
-                  <span className="text-sm font-semibold text-blue-400">{progressPercentage}%</span>
+                  <span className="text-sm text-secondary">Progress</span>
+                  <span className="text-sm font-semibold text-primary-400">{progressPercentage}%</span>
                 </div>
-                <div className="w-full bg-slate-700 rounded-full h-2">
+                <div className="w-full bg-gray-600 rounded-full h-2">
                   <div 
-                    className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                    className="bg-primary-600 h-2 rounded-full transition-all duration-300"
                     style={{ width: `${progressPercentage}%` }}
                   ></div>
                 </div>
-                <p className="text-xs text-slate-400 mt-1">
+                <p className="text-xs text-secondary mt-1">
                   {progressData.currentPage} / {activeBook.pages} pages
                 </p>
               </div>
             )}
 
+            {/* Submit Button */}
             <div className="flex gap-3 pt-2">
               <button 
                 type="button"
                 onClick={this.hideProgressModal}
-                className="flex-1 py-2 border border-slate-400 text-slate-400 font-semibold rounded-lg hover:bg-slate-400 hover:text-white transition-all duration-300 text-sm"
+                className="flex-1 py-2 border border-secondary text-secondary font-semibold rounded-lg hover:bg-secondary hover:text-white transition-all duration-300 text-sm"
               >
                 Cancel
               </button>
               <button 
                 type="submit"
-                className="flex-1 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-all duration-300 text-sm"
+                className="flex-1 py-2 bg-primary-600 text-white font-semibold rounded-lg hover:bg-primary-700 transition-all duration-300 text-sm"
               >
                 Update Progress
               </button>
@@ -1158,7 +1191,7 @@ class BookHubApp extends Component {
     if (!activeBook) {
       return (
         <div className="flex justify-center items-center py-12">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
         </div>
       );
     }
@@ -1173,47 +1206,47 @@ class BookHubApp extends Component {
         </div>
         
         <div className="lg:col-span-2">
-          <h2 className="text-3xl font-bold text-blue-400 mb-2">{activeBook.title}</h2>
-          <p className="text-xl text-slate-400 mb-4">by {activeBook.author}</p>
+          <h2 className="text-3xl font-bold text-primary-400 mb-2">{activeBook.title}</h2>
+          <p className="text-xl text-secondary mb-4">by {activeBook.author}</p>
           
           <div className="flex items-center mb-6">
             {this.renderStars(activeBook.rating)}
-            <span className="ml-3 text-lg font-semibold text-white">{activeBook.rating}/5</span>
-            <span className="ml-2 text-slate-400">({activeBook.reviews} reviews)</span>
+            <span className="ml-3 text-lg font-semibold">{activeBook.rating}/5</span>
+            <span className="ml-2 text-secondary">({activeBook.reviews} reviews)</span>
           </div>
           
           <div className="grid grid-cols-2 gap-4 mb-6">
-            <div className="bg-slate-800 rounded-lg p-4">
-              <div className="text-sm text-slate-400">Pages</div>
-              <div className="font-semibold text-white">{activeBook.pages}</div>
+            <div className="bg-card rounded-lg p-4">
+              <div className="text-sm text-secondary">Pages</div>
+              <div className="font-semibold">{activeBook.pages}</div>
             </div>
-            <div className="bg-slate-800 rounded-lg p-4">
-              <div className="text-sm text-slate-400">Genre</div>
-              <div className="font-semibold text-white">{activeBook.genre}</div>
+            <div className="bg-card rounded-lg p-4">
+              <div className="text-sm text-secondary">Genre</div>
+              <div className="font-semibold">{activeBook.genre}</div>
             </div>
             {activeBook.publishedYear && (
-              <div className="bg-slate-800 rounded-lg p-4">
-                <div className="text-sm text-slate-400">Published</div>
-                <div className="font-semibold text-white">{activeBook.publishedYear}</div>
+              <div className="bg-card rounded-lg p-4">
+                <div className="text-sm text-secondary">Published</div>
+                <div className="font-semibold">{activeBook.publishedYear}</div>
               </div>
             )}
             {activeBook.language && (
-              <div className="bg-slate-800 rounded-lg p-4">
-                <div className="text-sm text-slate-400">Language</div>
-                <div className="font-semibold text-white">{activeBook.language}</div>
+              <div className="bg-card rounded-lg p-4">
+                <div className="text-sm text-secondary">Language</div>
+                <div className="font-semibold">{activeBook.language}</div>
               </div>
             )}
           </div>
           
           <div className="mb-6">
-            <h3 className="text-xl font-semibold mb-3 text-white">About this book</h3>
-            <p className="text-slate-400 leading-relaxed">{activeBook.description}</p>
+            <h3 className="text-xl font-semibold mb-3">About this book</h3>
+            <p className="text-secondary leading-relaxed">{activeBook.description}</p>
           </div>
           
           <div className="flex flex-wrap gap-4 mb-8">
             <button 
               onClick={() => this.addBookToLibrary(activeBook)}
-              className="px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors duration-300 flex items-center gap-2"
+              className="px-6 py-3 bg-primary-600 text-white font-semibold rounded-lg hover:bg-primary-700 transition-colors duration-300 flex items-center gap-2"
             >
               <i className="fas fa-plus"></i>
               Add to Library
@@ -1242,7 +1275,7 @@ class BookHubApp extends Component {
             {activeBook.previewLink && activeBook.isGoogleBook && (
               <button 
                 onClick={() => window.open(activeBook.previewLink, '_blank')}
-                className="px-6 py-3 bg-blue-500 text-white font-semibold rounded-lg hover:bg-blue-600 transition-colors duration-300 flex items-center gap-2"
+                className="px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors duration-300 flex items-center gap-2"
               >
                 <i className="fas fa-external-link-alt"></i>
                 Google Preview
@@ -1253,8 +1286,8 @@ class BookHubApp extends Component {
               onClick={() => this.showReviewModal(activeBook)}
               className={`px-6 py-3 border font-semibold rounded-lg transition-all duration-300 flex items-center gap-2 ${
                 userHasReviewed 
-                  ? 'border-slate-500 text-slate-500 cursor-not-allowed' 
-                  : 'border-blue-400 text-blue-400 hover:bg-blue-400 hover:text-white'
+                  ? 'border-gray-500 text-gray-500 cursor-not-allowed' 
+                  : 'border-accent text-accent hover:bg-accent hover:text-white'
               }`}
               disabled={userHasReviewed}
             >
@@ -1263,32 +1296,33 @@ class BookHubApp extends Component {
             </button>
           </div>
 
+          {/* Reviews Section in Book Details */}
           <div className="mt-8">
-            <h3 className="text-2xl font-semibold mb-4 text-blue-400">Reader Reviews</h3>
+            <h3 className="text-2xl font-semibold mb-4 text-primary-400">Reader Reviews</h3>
             {bookReviews.length > 0 ? (
               <div className="space-y-4 max-h-96 overflow-y-auto">
                 {bookReviews.map(review => (
-                  <div key={review.id} className="bg-slate-800 rounded-xl p-4">
+                  <div key={review.id} className="bg-card rounded-xl p-4">
                     <div className="flex items-start space-x-3 mb-3">
                       <img src={review.userAvatar} alt={review.userName} className="h-10 w-10 rounded-full" />
                       <div className="flex-1">
                         <div className="flex justify-between items-start">
                           <div>
-                            <h4 className="font-semibold text-blue-400">{review.userName}</h4>
+                            <h4 className="font-semibold text-primary-400">{review.userName}</h4>
                             <div className="flex items-center mt-1">
                               {this.renderStars(review.rating)}
                             </div>
                           </div>
-                          <div className="text-sm text-slate-400">{review.date}</div>
+                          <div className="text-sm text-secondary">{review.date}</div>
                         </div>
                       </div>
                     </div>
-                    <h5 className="font-semibold text-lg mb-2 text-white">{review.title}</h5>
-                    <p className="text-slate-400 mb-3">{review.content}</p>
+                    <h5 className="font-semibold text-lg mb-2">{review.title}</h5>
+                    <p className="text-secondary mb-3">{review.content}</p>
                     {review.memeReview && (
-                      <div className="meme-review bg-slate-900 rounded-lg p-3">
-                        <p className="text-sm font-medium text-blue-300">💡 Vibe Check:</p>
-                        <p className="text-sm text-slate-300">{review.memeReview}</p>
+                      <div className="meme-review bg-dark rounded-lg p-3">
+                        <p className="text-sm font-medium text-accent">💡 Vibe Check:</p>
+                        <p className="text-sm">{review.memeReview}</p>
                       </div>
                     )}
                     <div className="flex justify-between items-center mt-3">
@@ -1297,13 +1331,13 @@ class BookHubApp extends Component {
                         className={`reaction-btn flex items-center gap-1 transition-colors duration-300 ${
                           review.likedBy && review.likedBy.includes(this.state.currentUser?.id)
                             ? 'text-red-500'
-                            : 'text-slate-400 hover:text-red-500'
+                            : 'text-secondary hover:text-red-500'
                         }`}
                       >
                         <i className="fas fa-heart"></i> 
                         <span>{review.likes}</span>
                       </button>
-                      <button className="text-slate-400 hover:text-blue-400 transition-colors duration-300">
+                      <button className="text-secondary hover:text-primary-400 transition-colors duration-300">
                         <i className="fas fa-share"></i>
                       </button>
                     </div>
@@ -1311,9 +1345,9 @@ class BookHubApp extends Component {
                 ))}
               </div>
             ) : (
-              <div className="text-center py-8 bg-slate-800 rounded-xl">
-                <i className="fas fa-comment-slash text-4xl text-slate-400 mb-3"></i>
-                <p className="text-slate-400">No reviews yet. Be the first to review this book!</p>
+              <div className="text-center py-8 bg-card rounded-xl">
+                <i className="fas fa-comment-slash text-4xl text-secondary mb-3"></i>
+                <p className="text-secondary">No reviews yet. Be the first to review this book!</p>
               </div>
             )}
           </div>
@@ -1333,32 +1367,32 @@ class BookHubApp extends Component {
       const userHasReviewed = currentUser && bookReviews.some(review => review.userId === currentUser.id);
 
       return (
-        <div key={book.id} className="bg-slate-800 rounded-2xl p-6 card-hover">
+        <div key={book.id} className="bg-dark rounded-2xl p-6 card-hover">
           <div className="flex flex-col items-center text-center">
             <img src={book.cover} alt={book.title} className="book-cover mb-4 rounded-lg shadow-md" />
-            <h3 className="text-xl font-semibold text-blue-400 mb-1">{book.title}</h3>
-            <p className="text-slate-400 mb-2">by {book.author}</p>
+            <h3 className="text-xl font-semibold text-primary-400 mb-1">{book.title}</h3>
+            <p className="text-secondary mb-2">by {book.author}</p>
             <div className="flex items-center mb-3">
-              <span className="px-2 py-1 bg-slate-700 text-xs rounded-full text-slate-400">{book.genre}</span>
+              <span className="px-2 py-1 bg-card text-xs rounded-full text-secondary">{book.genre}</span>
               {userHasReviewed && (
                 <span className="px-2 py-1 bg-green-600 text-xs rounded-full text-white ml-2">Reviewed</span>
               )}
             </div>
             <div className="flex items-center mb-3">
               {this.renderStars(book.rating)}
-              <span className="ml-2 text-sm text-slate-400">{book.rating}</span>
+              <span className="ml-2 text-sm text-secondary">{book.rating}</span>
             </div>
-            <p className="text-sm text-slate-400 mb-4 line-clamp-3">{book.description}</p>
+            <p className="text-sm text-secondary mb-4 line-clamp-3">{book.description}</p>
             <div className="flex space-x-2 w-full">
               <button 
                 onClick={() => this.addBookToLibrary(book)}
-                className="add-to-library-btn flex-1 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition-colors duration-300"
+                className="add-to-library-btn flex-1 py-2 bg-primary-600 text-white text-sm rounded-lg hover:bg-primary-700 transition-colors duration-300"
               >
                 Add to Library
               </button>
               <button 
                 onClick={() => this.showBookDetails(book.id)}
-                className="view-details-btn flex-1 py-2 border border-blue-400 text-blue-400 text-sm rounded-lg hover:bg-blue-400 hover:text-white transition-all duration-300"
+                className="view-details-btn flex-1 py-2 border border-accent text-accent text-sm rounded-lg hover:bg-accent hover:text-white transition-all duration-300"
               >
                 Details
               </button>
@@ -1368,7 +1402,7 @@ class BookHubApp extends Component {
               className={`w-full mt-3 py-2 text-sm rounded-lg transition-all duration-300 flex items-center justify-center gap-2 ${
                 userHasReviewed 
                   ? 'bg-green-600 text-white cursor-default' 
-                  : 'bg-slate-700 text-slate-400 hover:bg-blue-600 hover:text-white'
+                  : 'bg-card text-secondary hover:bg-primary-600 hover:text-white'
               }`}
             >
               <i className="fas fa-pen"></i>
@@ -1380,15 +1414,16 @@ class BookHubApp extends Component {
     });
   }
 
+  // Render Search Results
   renderSearchResults = () => {
     const { searchResults, currentUser, userReviews } = this.state;
     
     if (searchResults.length === 0) {
       return (
         <div className="col-span-full text-center py-12">
-          <i className="fas fa-search text-6xl text-slate-400 mb-4"></i>
-          <h3 className="text-xl font-semibold text-slate-400 mb-2">No books found</h3>
-          <p className="text-slate-400">Try searching with different keywords</p>
+          <i className="fas fa-search text-6xl text-secondary mb-4"></i>
+          <h3 className="text-xl font-semibold text-secondary mb-2">No books found</h3>
+          <p className="text-secondary">Try searching with different keywords</p>
         </div>
       );
     }
@@ -1398,15 +1433,15 @@ class BookHubApp extends Component {
       const userHasReviewed = currentUser && bookReviews.some(review => review.userId === currentUser.id);
 
       return (
-        <div key={book.id} className="bg-slate-800 rounded-2xl p-6 card-hover">
+        <div key={book.id} className="bg-dark rounded-2xl p-6 card-hover">
           <div className="flex flex-col items-center text-center">
             <img src={book.cover} alt={book.title} className="book-cover mb-4 rounded-lg shadow-md" />
-            <h3 className="text-xl font-semibold text-blue-400 mb-1">{book.title}</h3>
-            <p className="text-slate-400 mb-2">by {book.author}</p>
+            <h3 className="text-xl font-semibold text-primary-400 mb-1">{book.title}</h3>
+            <p className="text-secondary mb-2">by {book.author}</p>
             <div className="flex items-center mb-3">
-              <span className="px-2 py-1 bg-slate-700 text-xs rounded-full text-slate-400">{book.genre}</span>
+              <span className="px-2 py-1 bg-card text-xs rounded-full text-secondary">{book.genre}</span>
               {book.isGoogleBook && (
-                <span className="px-2 py-1 bg-blue-500 text-xs rounded-full text-white ml-2">Google Books</span>
+                <span className="px-2 py-1 bg-blue-600 text-xs rounded-full text-white ml-2">Google Books</span>
               )}
               {userHasReviewed && (
                 <span className="px-2 py-1 bg-green-600 text-xs rounded-full text-white ml-2">Reviewed</span>
@@ -1414,19 +1449,19 @@ class BookHubApp extends Component {
             </div>
             <div className="flex items-center mb-3">
               {this.renderStars(book.rating)}
-              <span className="ml-2 text-sm text-slate-400">{book.rating}</span>
+              <span className="ml-2 text-sm text-secondary">{book.rating}</span>
             </div>
-            <p className="text-sm text-slate-400 mb-4 line-clamp-3">{book.description}</p>
+            <p className="text-sm text-secondary mb-4 line-clamp-3">{book.description}</p>
             <div className="flex space-x-2 w-full">
               <button 
                 onClick={() => this.addBookToLibrary(book)}
-                className="add-to-library-btn flex-1 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition-colors duration-300"
+                className="add-to-library-btn flex-1 py-2 bg-primary-600 text-white text-sm rounded-lg hover:bg-primary-700 transition-colors duration-300"
               >
                 Add to Library
               </button>
               <button 
                 onClick={() => this.showBookDetails(book.id)}
-                className="view-details-btn flex-1 py-2 border border-blue-400 text-blue-400 text-sm rounded-lg hover:bg-blue-400 hover:text-white transition-all duration-300"
+                className="view-details-btn flex-1 py-2 border border-accent text-accent text-sm rounded-lg hover:bg-accent hover:text-white transition-all duration-300"
               >
                 Details
               </button>
@@ -1436,7 +1471,7 @@ class BookHubApp extends Component {
               className={`w-full mt-3 py-2 text-sm rounded-lg transition-all duration-300 flex items-center justify-center gap-2 ${
                 userHasReviewed 
                   ? 'bg-green-600 text-white cursor-default' 
-                  : 'bg-slate-700 text-slate-400 hover:bg-blue-600 hover:text-white'
+                  : 'bg-card text-secondary hover:bg-primary-600 hover:text-white'
               }`}
             >
               <i className="fas fa-pen"></i>
@@ -1452,29 +1487,29 @@ class BookHubApp extends Component {
     const trendingBooks = this.sampleBooks.filter(book => book.trending);
     
     return trendingBooks.map(book => (
-      <div key={book.id} className="bg-slate-800 rounded-2xl p-6 card-hover relative">
+      <div key={book.id} className="bg-dark rounded-2xl p-6 card-hover relative">
         <div className="absolute top-4 right-4 trending-badge">
           Trending 
         </div>
         <div className="flex flex-col items-center text-center">
           <img src={book.cover} alt={book.title} className="book-cover mb-4 rounded-lg shadow-md" />
-          <h3 className="text-xl font-semibold text-blue-400 mb-1">{book.title}</h3>
-          <p className="text-slate-400 mb-2">by {book.author}</p>
+          <h3 className="text-xl font-semibold text-primary-400 mb-1">{book.title}</h3>
+          <p className="text-secondary mb-2">by {book.author}</p>
           <div className="flex items-center mb-3">
             {this.renderStars(book.rating)}
-            <span className="ml-2 text-sm text-slate-400">{book.rating} ({book.reviews} reviews)</span>
+            <span className="ml-2 text-sm text-secondary">{book.rating} ({book.reviews} reviews)</span>
           </div>
-          <p className="text-sm text-slate-400 mb-4 line-clamp-2">{book.description}</p>
+          <p className="text-sm text-secondary mb-4 line-clamp-2">{book.description}</p>
           <div className="flex space-x-2 w-full">
             <button 
               onClick={() => this.addBookToLibrary(book)}
-              className="add-to-library-btn flex-1 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition-colors duration-300"
+              className="add-to-library-btn flex-1 py-2 bg-primary-600 text-white text-sm rounded-lg hover:bg-primary-700 transition-colors duration-300"
             >
               Add to Library
             </button>
             <button 
               onClick={() => this.showBookDetails(book.id)}
-              className="view-details-btn flex-1 py-2 border border-blue-400 text-blue-400 text-sm rounded-lg hover:bg-blue-400 hover:text-white transition-all duration-300"
+              className="view-details-btn flex-1 py-2 border border-accent text-accent text-sm rounded-lg hover:bg-accent hover:text-white transition-all duration-300"
             >
               Details
             </button>
@@ -1495,27 +1530,27 @@ class BookHubApp extends Component {
       if (!book) return null;
 
       return (
-        <div key={review.id} className="bg-slate-800 rounded-2xl p-6 card-hover">
+        <div key={review.id} className="bg-dark rounded-2xl p-6 card-hover">
           <div className="flex items-start space-x-4 mb-4">
             <img src={review.userAvatar} alt={review.userName} className="h-12 w-12 rounded-full" />
             <div className="flex-1">
               <div className="flex justify-between items-start">
                 <div>
-                  <h4 className="font-semibold text-blue-400">{review.userName}</h4>
-                  <p className="text-sm text-slate-400">Reviewed "{book.title}"</p>
+                  <h4 className="font-semibold text-primary-400">{review.userName}</h4>
+                  <p className="text-sm text-secondary">Reviewed "{book.title}"</p>
                 </div>
-                <div className="text-sm text-slate-400">{review.date}</div>
+                <div className="text-sm text-secondary">{review.date}</div>
               </div>
               <div className="flex items-center mt-2">
                 {this.renderStars(review.rating)}
               </div>
             </div>
           </div>
-          <h5 className="font-semibold text-lg mb-2 text-white">{review.title}</h5>
-          <p className="text-slate-400 mb-4">{review.content}</p>
+          <h5 className="font-semibold text-lg mb-2">{review.title}</h5>
+          <p className="text-secondary mb-4">{review.content}</p>
           <div className="meme-review">
-            <p className="text-sm font-medium text-blue-300">💡 Vibe Check:</p>
-            <p className="text-sm text-slate-300">{review.memeReview}</p>
+            <p className="text-sm font-medium">💡 Vibe Check:</p>
+            <p className="text-sm">{review.memeReview}</p>
           </div>
           <div className="flex justify-between items-center mt-4">
             <div className="flex space-x-4">
@@ -1524,17 +1559,17 @@ class BookHubApp extends Component {
                 className={`reaction-btn flex items-center gap-1 transition-colors duration-300 ${
                   review.likedBy && review.likedBy.includes(currentUser?.id)
                     ? 'text-red-500'
-                    : 'text-slate-400 hover:text-red-500'
+                    : 'text-secondary hover:text-red-500'
                 }`}
               >
                 <i className="fas fa-heart"></i> 
                 <span>{review.likes}</span>
               </button>
-              <button className="reaction-btn text-slate-400 hover:text-blue-400 transition-colors duration-300">
+              <button className="reaction-btn text-secondary hover:text-primary-400 transition-colors duration-300">
                 <i className="fas fa-comment"></i> Reply
               </button>
             </div>
-            <button className="text-slate-400 hover:text-blue-400 transition-colors duration-300">
+            <button className="text-secondary hover:text-primary-400 transition-colors duration-300">
               <i className="fas fa-share"></i>
             </button>
           </div>
@@ -1543,15 +1578,16 @@ class BookHubApp extends Component {
     });
   }
 
+  // UPDATED: Render User Library with Filter and Sort
   renderUserLibrary = () => {
     const { currentUser, userReviews, libraryFilter, librarySort } = this.state;
     
     if (!currentUser) {
       return (
         <div className="col-span-full text-center py-12">
-          <i className="fas fa-lock text-6xl text-slate-400 mb-4"></i>
-          <h3 className="text-xl font-semibold text-slate-400 mb-2">Login to access your library</h3>
-          <p className="text-slate-400">Sign in to view and manage your book collection</p>
+          <i className="fas fa-lock text-6xl text-secondary mb-4"></i>
+          <h3 className="text-xl font-semibold text-secondary mb-2">Login to access your library</h3>
+          <p className="text-secondary">Sign in to view and manage your book collection</p>
         </div>
       );
     }
@@ -1561,9 +1597,9 @@ class BookHubApp extends Component {
     if (filteredSortedLibrary.length === 0) {
       return (
         <div className="col-span-full text-center py-12">
-          <i className="fas fa-book-open text-6xl text-slate-400 mb-4"></i>
-          <h3 className="text-xl font-semibold text-slate-400 mb-2">Your library is empty</h3>
-          <p className="text-slate-400">Add some books to get started!</p>
+          <i className="fas fa-book-open text-6xl text-secondary mb-4"></i>
+          <h3 className="text-xl font-semibold text-secondary mb-2">Your library is empty</h3>
+          <p className="text-secondary">Add some books to get started!</p>
         </div>
       );
     }
@@ -1575,17 +1611,17 @@ class BookHubApp extends Component {
         (book.currentPage > 0 ? Math.min(100, Math.round((book.currentPage / book.pages) * 100)) : 0);
 
       return (
-        <div key={book.id} className="bg-slate-800 rounded-2xl p-6 card-hover">
+        <div key={book.id} className="bg-dark rounded-2xl p-6 card-hover">
           <div className="flex items-start space-x-4">
             <img src={book.cover} alt={book.title} className="book-cover rounded-lg w-24 h-32 object-cover" />
             <div className="flex-1">
-              <h3 className="text-xl font-semibold text-blue-400 mb-1">{book.title}</h3>
-              <p className="text-slate-400 mb-2">by {book.author}</p>
+              <h3 className="text-xl font-semibold text-primary-400 mb-1">{book.title}</h3>
+              <p className="text-secondary mb-2">by {book.author}</p>
               <div className="flex items-center mb-4">
-                <span className="px-2 py-1 bg-slate-700 text-xs rounded-full text-slate-400">{book.genre}</span>
+                <span className="px-2 py-1 bg-card text-xs rounded-full text-secondary">{book.genre}</span>
                 <span className={`px-2 py-1 text-xs rounded-full text-white ml-2 ${
                   book.status === 'completed' ? 'bg-green-600' :
-                  book.status === 'reading' ? 'bg-blue-600' : 'bg-slate-600'
+                  book.status === 'reading' ? 'bg-blue-600' : 'bg-gray-600'
                 }`}>
                   {book.status === 'completed' ? 'Completed' :
                    book.status === 'reading' ? 'Reading' : 'To Read'}
@@ -1595,18 +1631,19 @@ class BookHubApp extends Component {
                 )}
               </div>
               
+              {/* Progress Section */}
               <div className="mb-4">
                 <div className="flex justify-between mb-1">
-                  <span className="text-sm text-slate-400">Progress</span>
-                  <span className="text-sm font-semibold text-blue-400">{progressPercentage}%</span>
+                  <span className="text-sm text-secondary">Progress</span>
+                  <span className="text-sm font-semibold text-primary-400">{progressPercentage}%</span>
                 </div>
-                <div className="w-full bg-slate-700 rounded-full h-2">
+                <div className="w-full bg-gray-600 rounded-full h-2">
                   <div 
-                    className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                    className="bg-primary-600 h-2 rounded-full transition-all duration-300"
                     style={{ width: `${progressPercentage}%` }}
                   ></div>
                 </div>
-                <p className="text-xs text-slate-400 mt-1">
+                <p className="text-xs text-secondary mt-1">
                   {book.currentPage || 0} / {book.pages} pages
                 </p>
               </div>
@@ -1614,13 +1651,13 @@ class BookHubApp extends Component {
               <div className="flex space-x-2">
                 <button 
                   onClick={() => this.showProgressModal(book)}
-                  className="update-progress-btn flex-1 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition-colors duration-300"
+                  className="update-progress-btn flex-1 py-2 bg-primary-600 text-white text-sm rounded-lg hover:bg-primary-700 transition-colors duration-300"
                 >
                   Update Progress
                 </button>
                 <button 
                   onClick={() => this.showBookDetails(book.id)}
-                  className="view-details-btn flex-1 py-2 border border-blue-400 text-blue-400 text-sm rounded-lg hover:bg-blue-400 hover:text-white transition-all duration-300"
+                  className="view-details-btn flex-1 py-2 border border-accent text-accent text-sm rounded-lg hover:bg-accent hover:text-white transition-all duration-300"
                 >
                   Details
                 </button>
@@ -1630,7 +1667,7 @@ class BookHubApp extends Component {
                 className={`w-full mt-3 py-2 text-sm rounded-lg transition-all duration-300 flex items-center justify-center gap-2 ${
                   userHasReviewed 
                     ? 'bg-green-600 text-white cursor-default' 
-                    : 'bg-slate-700 text-slate-400 hover:bg-blue-600 hover:text-white'
+                    : 'bg-card text-secondary hover:bg-primary-600 hover:text-white'
                 }`}
               >
                 <i className="fas fa-pen"></i>
@@ -1643,6 +1680,7 @@ class BookHubApp extends Component {
     });
   }
 
+  // Review Modal
   renderReviewModal = () => {
     const { showReviewModal, activeBook, reviewData, currentUser } = this.state;
 
@@ -1650,20 +1688,21 @@ class BookHubApp extends Component {
 
     return (
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 animate-fade-in-up p-4">
-        <div className="bg-slate-800 rounded-xl p-6 max-w-md w-full mx-auto card-hover relative max-h-[85vh] overflow-y-auto">
+        <div className="bg-card rounded-xl p-6 max-w-md w-full mx-auto card-hover relative max-h-[85vh] overflow-y-auto">
           <button 
             onClick={this.hideReviewModal}
-            className="absolute top-3 right-3 text-slate-400 hover:text-blue-400 transition-colors duration-300 text-lg"
+            className="absolute top-3 right-3 text-secondary hover:text-primary-400 transition-colors duration-300 text-lg"
           >
             <i className="fas fa-times"></i>
           </button>
 
-          <h3 className="text-xl font-semibold mb-2 text-center text-white">Write a Review</h3>
-          <p className="text-center text-slate-400 text-sm mb-4">for "{activeBook.title}"</p>
+          <h3 className="text-xl font-semibold mb-2 text-center">Write a Review</h3>
+          <p className="text-center text-secondary text-sm mb-4">for "{activeBook.title}"</p>
 
           <form onSubmit={this.submitReview} className="space-y-4">
+            {/* Star Rating */}
             <div className="text-center">
-              <label className="block text-sm font-semibold mb-2 text-white">Your Rating</label>
+              <label className="block text-sm font-semibold mb-2">Your Rating</label>
               <div className="star-rating text-2xl mb-2">
                 {[1, 2, 3, 4, 5].map((star) => (
                   <i
@@ -1678,68 +1717,72 @@ class BookHubApp extends Component {
                   />
                 ))}
               </div>
-              <p className="text-xs text-slate-400">
+              <p className="text-xs text-secondary">
                 {reviewData.rating === 0 ? 'Select your rating' : `${reviewData.rating} out of 5 stars`}
               </p>
             </div>
 
+            {/* Review Title */}
             <div>
-              <label className="block text-sm font-semibold mb-1 text-white">Review Title</label>
+              <label className="block text-sm font-semibold mb-1">Review Title</label>
               <input 
                 type="text" 
                 value={reviewData.title}
                 onChange={(e) => this.handleReviewInputChange('title', e.target.value)}
                 required 
-                className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 transition-all duration-300 text-sm text-white" 
+                className="w-full px-3 py-2 bg-dark border border-card rounded-lg focus:border-primary-500 focus:ring-1 focus:ring-primary-500/20 transition-all duration-300 text-sm" 
                 placeholder="Give your review a title..." 
                 maxLength="60"
               />
             </div>
 
+            {/* Review Content */}
             <div>
-              <label className="block text-sm font-semibold mb-1 text-white">Your Review</label>
+              <label className="block text-sm font-semibold mb-1">Your Review</label>
               <textarea 
                 value={reviewData.content}
                 onChange={(e) => this.handleReviewInputChange('content', e.target.value)}
                 required 
                 rows="3"
-                className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 transition-all duration-300 resize-none text-sm text-white" 
+                className="w-full px-3 py-2 bg-dark border border-card rounded-lg focus:border-primary-500 focus:ring-1 focus:ring-primary-500/20 transition-all duration-300 resize-none text-sm" 
                 placeholder="Share your thoughts about this book..."
                 maxLength="500"
               />
-              <div className="text-right text-xs text-slate-400 mt-1">
+              <div className="text-right text-xs text-secondary mt-1">
                 {reviewData.content.length}/500 characters
               </div>
             </div>
 
+            {/* Meme Review (Optional) */}
             <div>
-              <label className="block text-sm font-semibold mb-1 text-white">
+              <label className="block text-sm font-semibold mb-1">
                 Vibe Check (Optional)
               </label>
               <input 
                 type="text" 
                 value={reviewData.memeReview}
                 onChange={(e) => this.handleReviewInputChange('memeReview', e.target.value)}
-                className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 transition-all duration-300 text-sm text-white" 
+                className="w-full px-3 py-2 bg-dark border border-card rounded-lg focus:border-primary-500 focus:ring-1 focus:ring-primary-500/20 transition-all duration-300 text-sm" 
                 placeholder="Add a funny one-liner..."
                 maxLength="100"
               />
-              <div className="text-right text-xs text-slate-400 mt-1">
+              <div className="text-right text-xs text-secondary mt-1">
                 {reviewData.memeReview.length}/100 characters
               </div>
             </div>
 
+            {/* Submit Button */}
             <div className="flex gap-3 pt-2">
               <button 
                 type="button"
                 onClick={this.hideReviewModal}
-                className="flex-1 py-2 border border-slate-400 text-slate-400 font-semibold rounded-lg hover:bg-slate-400 hover:text-white transition-all duration-300 text-sm"
+                className="flex-1 py-2 border border-secondary text-secondary font-semibold rounded-lg hover:bg-secondary hover:text-white transition-all duration-300 text-sm"
               >
                 Cancel
               </button>
               <button 
                 type="submit"
-                className="flex-1 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-all duration-300 text-sm"
+                className="flex-1 py-2 bg-primary-600 text-white font-semibold rounded-lg hover:bg-primary-700 transition-all duration-300 text-sm"
               >
                 Submit Review
               </button>
@@ -1750,6 +1793,7 @@ class BookHubApp extends Component {
     );
   }
 
+  // Event Handlers
   handleUserLogin = (e) => {
     e.preventDefault();
     const { loginData } = this.state;
@@ -1824,10 +1868,12 @@ class BookHubApp extends Component {
     });
   }
 
+  // Quick search handlers
   handleQuickSearch = (searchTerm) => {
     this.handleEnhancedSearch(searchTerm);
   }
 
+  // Utility Methods
   setupEventListeners = () => {
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') {
@@ -1847,24 +1893,24 @@ class BookHubApp extends Component {
 
     return (
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 animate-fade-in-up">
-        <div className="bg-slate-800 rounded-2xl p-8 max-w-md w-full mx-4 card-hover relative">
+        <div className="bg-card rounded-2xl p-8 max-w-md w-full mx-4 card-hover relative">
           <button 
             onClick={this.hideLoginModal}
-            className="absolute top-4 right-4 text-slate-400 hover:text-blue-400 transition-colors duration-300 text-xl"
+            className="absolute top-4 right-4 text-secondary hover:text-primary-400 transition-colors duration-300 text-xl"
           >
             <i className="fas fa-times"></i>
           </button>
 
-          <h3 className="text-2xl font-semibold mb-6 text-center text-blue-400">Join BookHub</h3>
+          <h3 className="text-2xl font-semibold mb-6 text-center gradient-text">Join BookHub</h3>
           
           {(activeForm === 'user-login' || activeForm === 'admin-login') && (
-            <div className="flex border-b border-slate-700 mb-6">
+            <div className="flex border-b border-gray-600 mb-6">
               <button 
                 onClick={() => this.switchLoginTab('user')}
                 className={`login-tab flex-1 py-2 font-medium transition-all duration-300 ${
                   activeTab === 'user' 
-                    ? 'text-blue-400 border-b-2 border-blue-400' 
-                    : 'text-slate-400 hover:text-blue-300'
+                    ? 'text-primary-400 border-b-2 border-primary-400' 
+                    : 'text-secondary hover:text-primary-300'
                 }`}
               >
                 User Login
@@ -1873,8 +1919,8 @@ class BookHubApp extends Component {
                 onClick={() => this.switchLoginTab('admin')}
                 className={`login-tab flex-1 py-2 font-medium transition-all duration-300 ${
                   activeTab === 'admin' 
-                    ? 'text-blue-400 border-b-2 border-blue-400' 
-                    : 'text-slate-400 hover:text-blue-300'
+                    ? 'text-primary-400 border-b-2 border-primary-400' 
+                    : 'text-secondary hover:text-primary-300'
                 }`}
               >
                 Admin Login
@@ -1885,7 +1931,7 @@ class BookHubApp extends Component {
           {activeForm === 'register' && (
             <button 
               onClick={this.showUserLogin}
-              className="flex items-center text-slate-400 hover:text-blue-400 transition-colors duration-300 mb-4 text-sm"
+              className="flex items-center text-secondary hover:text-primary-400 transition-colors duration-300 mb-4 text-sm"
             >
               <i className="fas fa-arrow-left mr-2"></i>
               Back to Login
@@ -1895,40 +1941,40 @@ class BookHubApp extends Component {
           {activeForm === 'user-login' && (
             <form onSubmit={this.handleUserLogin} className="space-y-4">
               <div>
-                <label className="block text-sm font-semibold mb-2 text-white">Username or Email</label>
+                <label className="block text-sm font-semibold mb-2">Username or Email</label>
                 <input 
                   type="text" 
                   value={loginData.username}
                   onChange={(e) => this.handleInputChange('loginData', 'username', e.target.value)}
                   required 
-                  className="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all duration-300 text-white" 
+                  className="w-full px-4 py-3 bg-dark border border-card rounded-lg focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 transition-all duration-300" 
                   placeholder="Enter username or email" 
                 />
               </div>
               <div>
-                <label className="block text-sm font-semibold mb-2 text-white">Password</label>
+                <label className="block text-sm font-semibold mb-2">Password</label>
                 <input 
                   type="password" 
                   value={loginData.password}
                   onChange={(e) => this.handleInputChange('loginData', 'password', e.target.value)}
                   required 
-                  className="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all duration-300 text-white" 
+                  className="w-full px-4 py-3 bg-dark border border-card rounded-lg focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 transition-all duration-300" 
                   placeholder="Enter password" 
                 />
               </div>
               <div className="flex justify-between items-center">
-                <label className="flex items-center text-white">
-                  <input type="checkbox" className="rounded border-slate-300 text-blue-600 focus:ring-blue-500" />
+                <label className="flex items-center">
+                  <input type="checkbox" className="rounded border-gray-300 text-primary-600 focus:ring-primary-500" />
                   <span className="ml-2 text-sm">Remember me</span>
                 </label>
-                <a href="#" className="text-sm text-blue-400 hover:underline">Forgot password?</a>
+                <a href="#" className="text-sm text-primary-400 hover:underline">Forgot password?</a>
               </div>
-              <button type="submit" className="w-full py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-all duration-300 transform hover:scale-105">
+              <button type="submit" className="w-full py-3 bg-primary-600 text-white font-semibold rounded-lg hover:bg-primary-700 transition-all duration-300 transform hover:scale-105">
                 Let's Go!!!
               </button>
               
-              <div className="text-center text-sm mt-4 text-slate-400">
-                Don't have an account? <button type="button" onClick={this.showRegistration} className="text-blue-400 hover:underline font-semibold">Sign up now! ✨</button>
+              <div className="text-center text-sm mt-4">
+                Don't have an account? <button type="button" onClick={this.showRegistration} className="text-primary-400 hover:underline font-semibold">Sign up now! ✨</button>
               </div>
             </form>
           )}
@@ -1936,39 +1982,39 @@ class BookHubApp extends Component {
           {activeForm === 'admin-login' && (
             <form onSubmit={this.handleAdminLogin} className="space-y-4">
               <div>
-                <label className="block text-sm font-semibold mb-2 text-white">Admin Username</label>
+                <label className="block text-sm font-semibold mb-2">Admin Username</label>
                 <input 
                   type="text" 
                   value={adminData.username}
                   onChange={(e) => this.handleInputChange('adminData', 'username', e.target.value)}
                   required 
-                  className="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all duration-300 text-white" 
+                  className="w-full px-4 py-3 bg-dark border border-card rounded-lg focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 transition-all duration-300" 
                   placeholder="Enter admin username" 
                 />
               </div>
               <div>
-                <label className="block text-sm font-semibold mb-2 text-white">Admin Password</label>
+                <label className="block text-sm font-semibold mb-2">Admin Password</label>
                 <input 
                   type="password" 
                   value={adminData.password}
                   onChange={(e) => this.handleInputChange('adminData', 'password', e.target.value)}
                   required 
-                  className="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all duration-300 text-white" 
+                  className="w-full px-4 py-3 bg-dark border border-card rounded-lg focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 transition-all duration-300" 
                   placeholder="Enter admin password" 
                 />
               </div>
               <div>
-                <label className="block text-sm font-semibold mb-2 text-white">Security Code</label>
+                <label className="block text-sm font-semibold mb-2">Security Code</label>
                 <input 
                   type="text" 
                   value={adminData.securityCode}
                   onChange={(e) => this.handleInputChange('adminData', 'securityCode', e.target.value)}
                   required 
-                  className="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all duration-300 text-white" 
+                  className="w-full px-4 py-3 bg-dark border border-card rounded-lg focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 transition-all duration-300" 
                   placeholder="Enter security code" 
                 />
               </div>
-              <button type="submit" className="w-full py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-all duration-300 transform hover:scale-105">
+              <button type="submit" className="w-full py-3 bg-primary-600 text-white font-semibold rounded-lg hover:bg-primary-700 transition-all duration-300 transform hover:scale-105">
                 Admin Login 
               </button>
             </form>
@@ -1977,61 +2023,61 @@ class BookHubApp extends Component {
           {activeForm === 'register' && (
             <form onSubmit={this.handleRegistration} className="space-y-4">
               <div>
-                <label className="block text-sm font-semibold mb-2 text-white">Full Name</label>
+                <label className="block text-sm font-semibold mb-2">Full Name</label>
                 <input 
                   type="text" 
                   value={registerData.name}
                   onChange={(e) => this.handleInputChange('registerData', 'name', e.target.value)}
                   required 
-                  className="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all duration-300 text-white" 
+                  className="w-full px-4 py-3 bg-dark border border-card rounded-lg focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 transition-all duration-300" 
                   placeholder="Enter your Lucky Name" 
                 />
               </div>
               <div>
-                <label className="block text-sm font-semibold mb-2 text-white">Username</label>
+                <label className="block text-sm font-semibold mb-2">Username</label>
                 <input 
                   type="text" 
                   value={registerData.username}
                   onChange={(e) => this.handleInputChange('registerData', 'username', e.target.value)}
                   required 
-                  className="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all duration-300 text-white" 
+                  className="w-full px-4 py-3 bg-dark border border-card rounded-lg focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 transition-all duration-300" 
                   placeholder="Choose a cool username" 
                 />
               </div>
               <div>
-                <label className="block text-sm font-semibold mb-2 text-white">Email</label>
+                <label className="block text-sm font-semibold mb-2">Email</label>
                 <input 
                   type="email" 
                   value={registerData.email}
                   onChange={(e) => this.handleInputChange('registerData', 'email', e.target.value)}
                   required 
-                  className="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all duration-300 text-white" 
+                  className="w-full px-4 py-3 bg-dark border border-card rounded-lg focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 transition-all duration-300" 
                   placeholder="Enter your email" 
                 />
               </div>
               <div>
-                <label className="block text-sm font-semibold mb-2 text-white">Password</label>
+                <label className="block text-sm font-semibold mb-2">Password</label>
                 <input 
                   type="password" 
                   value={registerData.password}
                   onChange={(e) => this.handleInputChange('registerData', 'password', e.target.value)}
                   required 
-                  className="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all duration-300 text-white" 
+                  className="w-full px-4 py-3 bg-dark border border-card rounded-lg focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 transition-all duration-300" 
                   placeholder="Create a strong password" 
                 />
               </div>
               <div>
-                <label className="block text-sm font-semibold mb-2 text-white">Confirm Password</label>
+                <label className="block text-sm font-semibold mb-2">Confirm Password</label>
                 <input 
                   type="password" 
                   value={registerData.confirmPassword}
                   onChange={(e) => this.handleInputChange('registerData', 'confirmPassword', e.target.value)}
                   required 
-                  className="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all duration-300 text-white" 
+                  className="w-full px-4 py-3 bg-dark border border-card rounded-lg focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 transition-all duration-300" 
                   placeholder="Confirm your password" 
                 />
               </div>
-              <button type="submit" className="w-full py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-all duration-300 transform hover:scale-105">
+              <button type="submit" className="w-full py-3 bg-primary-600 text-white font-semibold rounded-lg hover:bg-primary-700 transition-all duration-300 transform hover:scale-105">
                 Create Account 
               </button>
             </form>
@@ -2045,21 +2091,21 @@ class BookHubApp extends Component {
     if (!this.state.isMobileMenuOpen) return null;
 
     return (
-      <div className="md:hidden fixed inset-0 z-40 bg-slate-900/95 backdrop-blur-sm">
+      <div className="md:hidden fixed inset-0 z-40 bg-dark/95 backdrop-blur-sm">
         <div className="flex flex-col items-center justify-center h-full space-y-8">
           <button 
             onClick={this.closeMobileMenu}
-            className="absolute top-6 right-6 text-2xl text-slate-400 hover:text-blue-400"
+            className="absolute top-6 right-6 text-2xl text-secondary hover:text-primary-400"
           >
             <i className="fas fa-times"></i>
           </button>
           
-          <a href="#home" onClick={this.closeMobileMenu} className="nav-link text-2xl text-slate-400 hover:text-blue-400 transition-colors duration-300">Home</a>
-          <a href="#library" onClick={this.closeMobileMenu} className="nav-link text-2xl text-slate-400 hover:text-blue-400 transition-colors duration-300">My Library</a>
-          <a href="#discover" onClick={this.closeMobileMenu} className="nav-link text-2xl text-slate-400 hover:text-blue-400 transition-colors duration-300">Discover</a>
-          <a href="#reviews" onClick={this.closeMobileMenu} className="nav-link text-2xl text-slate-400 hover:text-blue-400 transition-colors duration-300">Reviews</a>
-          <a href="#stats" onClick={this.closeMobileMenu} className="nav-link text-2xl text-slate-400 hover:text-blue-400 transition-colors duration-300">Stats</a>
-          <a href="#trending" onClick={this.closeMobileMenu} className="nav-link text-2xl text-slate-400 hover:text-blue-400 transition-colors duration-300">Trending</a>
+          <a href="#home" onClick={this.closeMobileMenu} className="nav-link text-2xl text-secondary hover:text-primary-400 transition-colors duration-300">Home</a>
+          <a href="#library" onClick={this.closeMobileMenu} className="nav-link text-2xl text-secondary hover:text-primary-400 transition-colors duration-300">My Library</a>
+          <a href="#discover" onClick={this.closeMobileMenu} className="nav-link text-2xl text-secondary hover:text-primary-400 transition-colors duration-300">Discover</a>
+          <a href="#reviews" onClick={this.closeMobileMenu} className="nav-link text-2xl text-secondary hover:text-primary-400 transition-colors duration-300">Reviews</a>
+          <a href="#stats" onClick={this.closeMobileMenu} className="nav-link text-2xl text-secondary hover:text-primary-400 transition-colors duration-300">Stats</a>
+          <a href="#trending" onClick={this.closeMobileMenu} className="nav-link text-2xl text-secondary hover:text-primary-400 transition-colors duration-300">Trending</a>
         </div>
       </div>
     );
@@ -2081,7 +2127,7 @@ class BookHubApp extends Component {
               <div className="p-8">
                 {activeBook ? this.renderBookDetailsModal() : (
                   <div className="flex justify-center items-center py-12">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
                   </div>
                 )}
               </div>
@@ -2089,50 +2135,54 @@ class BookHubApp extends Component {
           </div>
         )}
 
+        {/* Review Modal */}
         {this.renderReviewModal()}
 
+        {/* Progress Modal */}
         {this.renderProgressModal()}
 
-        <div className="fixed inset-0 z-0 bg-gradient-to-br from-slate-900 via-blue-900 to-slate-800"></div>
+        {/* REMOVED: Particles container and grid-bg */}
+        <div className="fixed inset-0 z-0 bg-gradient-to-br from-blue-900 via-blue-800 to-blue-700"></div>
 
+        {/* Mobile Menu */}
         {this.renderMobileMenu()}
 
-        <nav className="fixed top-0 w-full bg-slate-900/90 backdrop-blur-sm z-50 border-b border-slate-700">
+        <nav className="fixed top-0 w-full bg-dark/90 backdrop-blur-sm z-50 border-b border-card">
           <div className="container mx-auto px-6 py-4">
             <div className="flex justify-between items-center">
               <a href="#home" className="flex items-center">
-                <div className="h-10 w-10 rounded-full mr-2 bg-blue-600 flex items-center justify-center">
+                <div className="h-10 w-10 rounded-full mr-2 bg-primary-600 flex items-center justify-center">
                   <i className="fas fa-book text-white"></i>
                 </div>
-                <span className="text-xl font-bold text-white">BookHub</span>
+                <span className="text-xl font-bold gradient-text">BookHub</span>
               </a>
               
               <div className="hidden md:flex space-x-8">
-                <a href="#home" className="nav-link text-slate-300 hover:text-blue-400 transition-colors duration-300 font-medium">Home</a>
-                <a href="#library" className="nav-link text-slate-300 hover:text-blue-400 transition-colors duration-300 font-medium">My Library</a>
-                <a href="#discover" className="nav-link text-slate-300 hover:text-blue-400 transition-colors duration-300 font-medium">Discover</a>
-                <a href="#reviews" className="nav-link text-slate-300 hover:text-blue-400 transition-colors duration-300 font-medium">Reviews</a>
-                <a href="#stats" className="nav-link text-slate-300 hover:text-blue-400 transition-colors duration-300 font-medium">Stats</a>
-                <a href="#trending" className="nav-link text-slate-300 hover:text-blue-400 transition-colors duration-300 font-medium">Trending</a>
+                <a href="#home" className="nav-link text-secondary hover:text-primary-400 transition-colors duration-300 font-medium">Home</a>
+                <a href="#library" className="nav-link text-secondary hover:text-primary-400 transition-colors duration-300 font-medium">My Library</a>
+                <a href="#discover" className="nav-link text-secondary hover:text-primary-400 transition-colors duration-300 font-medium">Discover</a>
+                <a href="#reviews" className="nav-link text-secondary hover:text-primary-400 transition-colors duration-300 font-medium">Reviews</a>
+                <a href="#stats" className="nav-link text-secondary hover:text-primary-400 transition-colors duration-300 font-medium">Stats</a>
+                <a href="#trending" className="nav-link text-secondary hover:text-primary-400 transition-colors duration-300 font-medium">Trending</a>
               </div>
 
               <div className="flex items-center space-x-4">
                 {currentUser && (
                   <div className="flex items-center space-x-2">
                     <img src={currentUser.avatar} alt="User" className="h-8 w-8 rounded-full" />
-                    <span className="text-sm font-medium hidden sm:block text-white">{currentUser.name}</span>
-                    <button onClick={this.handleLogout} className="text-slate-300 hover:text-blue-400 transition-colors duration-300">
+                    <span className="text-sm font-medium hidden sm:block">{currentUser.name}</span>
+                    <button onClick={this.handleLogout} className="text-secondary hover:text-primary-400 transition-colors duration-300">
                       <i className="fas fa-sign-out-alt"></i>
                     </button>
                   </div>
                 )}
 
-                <button onClick={this.toggleTheme} className="text-slate-300 hover:text-blue-400 transition-colors duration-300">
+                <button onClick={this.toggleTheme} className="text-secondary hover:text-primary-400 transition-colors duration-300">
                   <i className="fas fa-moon"></i>
                 </button>
 
                 {!currentUser && (
-                  <button onClick={this.showLoginModal} className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-300 flex items-center gap-2">
+                  <button onClick={this.showLoginModal} className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors duration-300 flex items-center gap-2">
                     <i className="fas fa-user"></i>
                     <span className="hidden sm:block">Login</span>
                   </button>
@@ -2140,7 +2190,7 @@ class BookHubApp extends Component {
 
                 <button 
                   onClick={this.toggleMobileMenu}
-                  className="md:hidden text-slate-300 hover:text-blue-400 transition-colors duration-300"
+                  className="md:hidden text-secondary hover:text-primary-400 transition-colors duration-300"
                 >
                   <i className={`fas ${isMobileMenuOpen ? 'fa-times' : 'fa-bars'} text-xl`}></i>
                 </button>
@@ -2154,10 +2204,10 @@ class BookHubApp extends Component {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
               <div className="space-y-8 animate-fade-in-up">
                 <div className="space-y-6">
-                  <h1 className="text-5xl lg:text-6xl font-bold leading-tight text-white">
-                    Read, Review, <span className="text-blue-400">Vibe</span>
+                  <h1 className="text-5xl lg:text-6xl font-bold leading-tight">
+                    Read, Review, <span className="gradient-text">Vibe</span>
                   </h1>
-                  <p className="text-lg text-slate-300 leading-relaxed max-w-2xl">
+                  <p className="text-lg text-secondary leading-relaxed max-w-2xl">
                     Join the lit reading community! Track your books, drop fire reviews, and connect with fellow bookworms.
                   </p>
                 </div>
@@ -2166,25 +2216,25 @@ class BookHubApp extends Component {
                   <input 
                     type="text" 
                     placeholder="Search for books, authors, or vibes..." 
-                    className="w-full px-6 py-4 bg-slate-800 border border-slate-700 rounded-2xl focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all duration-300 pr-12 text-white placeholder-slate-400"
+                    className="w-full px-6 py-4 bg-card border border-card rounded-2xl focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 transition-all duration-300 pr-12"
                     onKeyPress={(e) => e.key === 'Enter' && this.handleSearch(e.target.value)}
                   />
-                  <button className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-blue-400 transition-colors duration-300">
+                  <button className="absolute right-3 top-1/2 transform -translate-y-1/2 text-secondary hover:text-primary-400 transition-colors duration-300">
                     <i className="fas fa-search text-xl"></i>
                   </button>
                 </div>
                 <div className="flex space-x-6">
                   <div className="text-center">
-                    <div className="text-2xl font-bold text-blue-400">1.2K+</div>
-                    <div className="text-sm text-slate-400">Lit Reviews</div>
+                    <div className="text-2xl font-bold text-primary-400">1.2K+</div>
+                    <div className="text-sm text-secondary">Lit Reviews</div>
                   </div>
                   <div className="text-center">
-                    <div className="text-2xl font-bold text-blue-300">567</div>
-                    <div className="text-sm text-slate-400">Active Readers</div>
+                    <div className="text-2xl font-bold text-accent">567</div>
+                    <div className="text-sm text-secondary">Active Readers</div>
                   </div>
                   <div className="text-center">
-                    <div className="text-2xl font-bold text-green-400">89</div>
-                    <div className="text-sm text-slate-400">New This Week</div>
+                    <div className="text-2xl font-bold text-success">89</div>
+                    <div className="text-sm text-secondary">New This Week</div>
                   </div>
                 </div>
               </div>
@@ -2192,52 +2242,55 @@ class BookHubApp extends Component {
           </div>
         </section>
 
-        <section id="library" className="py-20 bg-slate-800/50 relative z-10">
+        <section id="library" className="py-20 bg-card relative z-10">
           <div className="container mx-auto px-6">
             <div className="text-center mb-16">
-              <h2 className="text-4xl font-bold mb-4 text-white">My Library</h2>
-              <p className="text-lg text-slate-300 max-w-2xl mx-auto">
+              <h2 className="text-4xl font-bold mb-4 gradient-text">My Library </h2>
+              <p className="text-lg text-secondary max-w-2xl mx-auto">
                 Your personal book collection - organized and lit! 
               </p>
             </div>
 
+            {/* UPDATED: Library Controls */}
             <div className="flex flex-wrap gap-4 mb-8 justify-center">
               <button 
                 onClick={this.handleAddBook}
-                className="px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors duration-300 flex items-center gap-2"
+                className="px-6 py-3 bg-primary-600 text-white font-semibold rounded-lg hover:bg-primary-700 transition-colors duration-300 flex items-center gap-2"
               >
                 <i className="fas fa-plus"></i>
                 Add Book
               </button>
               
+              {/* Filter Dropdown */}
               <div className="relative">
                 <select 
                   value={libraryFilter}
                   onChange={(e) => this.handleLibraryFilter(e.target.value)}
-                  className="px-6 py-3 bg-slate-800 border border-blue-600 text-blue-400 font-semibold rounded-lg hover:bg-blue-600 hover:text-white transition-all duration-300 appearance-none pr-10"
+                  className="px-6 py-3 bg-dark border border-primary-600 text-primary-600 font-semibold rounded-lg hover:bg-primary-600 hover:text-white transition-all duration-300 appearance-none pr-10"
                 >
                   <option value="all">All Books</option>
                   <option value="to-read">To Read</option>
                   <option value="reading">Reading</option>
                   <option value="completed">Completed</option>
                 </select>
-                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-blue-400">
+                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-primary-600">
                   <i className="fas fa-filter"></i>
                 </div>
               </div>
 
+              {/* Sort Dropdown */}
               <div className="relative">
                 <select 
                   value={librarySort}
                   onChange={(e) => this.handleLibrarySort(e.target.value)}
-                  className="px-6 py-3 bg-slate-800 border border-blue-400 text-blue-400 font-semibold rounded-lg hover:bg-blue-400 hover:text-white transition-all duration-300 appearance-none pr-10"
+                  className="px-6 py-3 bg-dark border border-accent text-accent font-semibold rounded-lg hover:bg-accent hover:text-white transition-all duration-300 appearance-none pr-10"
                 >
                   <option value="title">Sort by Title</option>
                   <option value="author">Sort by Author</option>
                   <option value="date-added">Sort by Date Added</option>
                   <option value="progress">Sort by Progress</option>
                 </select>
-                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-blue-400">
+                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-accent">
                   <i className="fas fa-sort"></i>
                 </div>
               </div>
@@ -2252,26 +2305,27 @@ class BookHubApp extends Component {
         <section id="discover" className="py-20 relative z-10">
           <div className="container mx-auto px-6">
             <div className="text-center mb-16">
-              <h2 className="text-4xl font-bold mb-4 text-white">
+              <h2 className="text-4xl font-bold mb-4 gradient-text">
                 {showSearchResults ? 'Search Results' : 'Discover New Reads'}
               </h2>
-              <p className="text-lg text-slate-300 max-w-2xl mx-auto">
+              <p className="text-lg text-secondary max-w-2xl mx-auto">
                 {showSearchResults 
                   ? 'Books found from Google Books API' 
                   : 'Find your next obsession! Explore books across genres and vibes.'}
               </p>
             </div>
 
+            {/* Search Results Header */}
             {showSearchResults && (
               <div className="flex justify-between items-center mb-8">
                 <button 
                   onClick={this.clearSearchResults}
-                  className="px-4 py-2 bg-slate-800 text-slate-300 rounded-lg hover:bg-blue-600 hover:text-white transition-colors duration-300 flex items-center gap-2"
+                  className="px-4 py-2 bg-card text-secondary rounded-lg hover:bg-primary-600 hover:text-white transition-colors duration-300 flex items-center gap-2"
                 >
                   <i className="fas fa-arrow-left"></i>
                   Back to All Books
                 </button>
-                <span className="text-slate-300">
+                <span className="text-secondary">
                   Found {this.state.searchResults.length} books
                 </span>
               </div>
@@ -2284,8 +2338,8 @@ class BookHubApp extends Component {
                   onClick={() => this.handleGenreFilter(genre)}
                   className={`px-4 py-2 rounded-full transition-all duration-300 ${
                     activeGenre === genre 
-                      ? 'bg-blue-600 text-white shadow-lg transform scale-105' 
-                      : 'bg-slate-800 text-slate-300 hover:bg-blue-600 hover:text-white hover:transform hover:scale-105'
+                      ? 'bg-primary-600 text-white shadow-lg transform scale-105' 
+                      : 'bg-card text-secondary hover:bg-primary-600 hover:text-white hover:transform hover:scale-105'
                   }`}
                 >
                   {genre === 'all' ? 'All Genres' : genre.charAt(0).toUpperCase() + genre.slice(1)}
@@ -2299,11 +2353,11 @@ class BookHubApp extends Component {
           </div>
         </section>
 
-        <section id="reviews" className="py-20 bg-slate-800/50 relative z-10">
+        <section id="reviews" className="py-20 bg-card relative z-10">
           <div className="container mx-auto px-6">
             <div className="text-center mb-16">
-              <h2 className="text-4xl font-bold mb-4 text-white">Community Reviews</h2>
-              <p className="text-lg text-slate-300 max-w-2xl mx-auto">
+              <h2 className="text-4xl font-bold mb-4 gradient-text">Community Reviews </h2>
+              <p className="text-lg text-secondary max-w-2xl mx-auto">
                 See what the community is saying about their latest reads!!!
               </p>
             </div>
