@@ -20,6 +20,36 @@
   --blue-100: #dbeafe;
 }
 
+/* Light Theme Variables */
+.light {
+  --bg-primary: #ffffff;
+  --bg-secondary: #f8fafc;
+  --bg-card: #ffffff;
+  --bg-modal: #ffffff;
+  --text-primary: #1e293b;
+  --text-secondary: #64748b;
+  --text-muted: #94a3b8;
+  --border-primary: #e2e8f0;
+  --border-secondary: #cbd5e1;
+  --accent-primary: #2563eb;
+  --accent-secondary: #1d4ed8;
+}
+
+/* Dark Theme Variables */
+.dark {
+  --bg-primary: #0f172a;
+  --bg-secondary: #1e293b;
+  --bg-card: #1e293b;
+  --bg-modal: #1e293b;
+  --text-primary: #f1f5f9;
+  --text-secondary: #cbd5e1;
+  --text-muted: #94a3b8;
+  --border-primary: #334155;
+  --border-secondary: #475569;
+  --accent-primary: #3b82f6;
+  --accent-secondary: #60a5fa;
+}
+
 /* Base Styles */
 * {
   margin: 0;
@@ -35,6 +65,9 @@ body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
   line-height: 1.6;
   overflow-x: hidden;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 .App {
@@ -48,28 +81,16 @@ body {
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--slate-900);
+  background: var(--bg-secondary);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--blue-600);
+  background: var(--accent-primary);
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--blue-700);
-}
-
-.light ::-webkit-scrollbar-track {
-  background: var(--blue-100);
-}
-
-.light ::-webkit-scrollbar-thumb {
-  background: var(--blue-500);
-}
-
-.light ::-webkit-scrollbar-thumb:hover {
-  background: var(--blue-600);
+  background: var(--accent-secondary);
 }
 
 /* Text Gradients */
@@ -97,13 +118,14 @@ body {
 /* Card Hover Effects */
 .card-hover {
   transition: all 0.3s ease;
-  border: 1px solid transparent;
+  border: 1px solid var(--border-primary);
+  background: var(--bg-card);
 }
 
 .card-hover:hover {
   transform: translateY(-5px);
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
-  border-color: var(--blue-500);
+  border-color: var(--accent-primary);
 }
 
 /* Grid Background */
@@ -131,7 +153,7 @@ body {
 }
 
 .star-rating label {
-  color: var(--slate-500);
+  color: var(--text-muted);
   cursor: pointer;
   font-size: 1.5rem;
   padding: 0 0.1rem;
@@ -163,18 +185,14 @@ body {
 /* Progress Bar */
 .progress-bar {
   height: 8px;
-  background-color: var(--slate-700);
+  background-color: var(--border-primary);
   border-radius: 4px;
   overflow: hidden;
 }
 
-.light .progress-bar {
-  background-color: var(--blue-200);
-}
-
 .progress-fill {
   height: 100%;
-  background-color: var(--blue-600);
+  background-color: var(--accent-primary);
   transition: width 0.5s ease;
   position: relative;
   overflow: hidden;
@@ -238,14 +256,15 @@ body {
 }
 
 .toast.info {
-  background-color: var(--blue-600);
-  border-left-color: var(--blue-700);
+  background-color: var(--accent-primary);
+  border-left-color: var(--accent-secondary);
 }
 
 /* Heart Button */
 .heart-btn {
   transition: all 0.3s ease;
   cursor: pointer;
+  color: var(--text-secondary);
 }
 
 .heart-btn:hover {
@@ -276,7 +295,7 @@ body {
 
 /* Vibe Card */
 .vibe-card {
-  background: linear-gradient(135deg, var(--blue-600) 0%, var(--blue-400) 100%);
+  background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-secondary) 100%);
   border-radius: 16px;
   padding: 20px;
   color: white;
@@ -303,7 +322,7 @@ body {
 
 /* Trending Badge */
 .trending-badge {
-  background: linear-gradient(45deg, var(--blue-600), var(--blue-400));
+  background: linear-gradient(45deg, var(--accent-primary), var(--accent-secondary));
   color: white;
   padding: 4px 12px;
   border-radius: 20px;
@@ -319,25 +338,24 @@ body {
 
 /* Meme Review */
 .meme-review {
-  background: var(--slate-100);
+  background: var(--bg-secondary);
   border-left: 4px solid #f59e0b;
   padding: 12px;
   border-radius: 8px;
   margin: 8px 0;
-}
-
-.dark .meme-review {
-  background: var(--slate-700);
+  color: var(--text-primary);
 }
 
 /* Reaction Button */
 .reaction-btn {
   transition: all 0.3s ease;
   cursor: pointer;
+  color: var(--text-secondary);
 }
 
 .reaction-btn:hover {
   transform: scale(1.1);
+  color: var(--accent-primary);
 }
 
 .reaction-btn.active {
@@ -356,7 +374,7 @@ body {
   right: 30px;
   width: 60px;
   height: 60px;
-  background: linear-gradient(135deg, var(--blue-600), #06b6d4);
+  background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -397,7 +415,7 @@ body {
 }
 
 .book-modal-content {
-  background: var(--slate-800);
+  background: var(--bg-modal);
   border-radius: 20px;
   max-width: 800px;
   width: 90%;
@@ -406,7 +424,8 @@ body {
   transform: scale(0.7);
   transition: transform 0.3s ease;
   position: relative;
-  border: 1px solid var(--slate-700);
+  border: 1px solid var(--border-primary);
+  color: var(--text-primary);
 }
 
 .book-modal.active .book-modal-content {
@@ -530,7 +549,7 @@ body {
 .nav-link {
   position: relative;
   text-decoration: none;
-  color: var(--slate-300);
+  color: var(--text-secondary);
   transition: color 0.3s ease;
 }
 
@@ -541,7 +560,7 @@ body {
   left: 0;
   width: 0;
   height: 2px;
-  background: var(--blue-400);
+  background: var(--accent-primary);
   transition: width 0.3s ease;
 }
 
@@ -550,7 +569,7 @@ body {
 }
 
 .nav-link:hover {
-  color: var(--blue-400);
+  color: var(--accent-primary);
 }
 
 /* Loading Spinner */
@@ -572,7 +591,7 @@ button:focus,
 input:focus,
 select:focus,
 textarea:focus {
-  outline: 2px solid var(--blue-500);
+  outline: 2px solid var(--accent-primary);
   outline-offset: 2px;
 }
 
@@ -583,13 +602,26 @@ button {
 
 /* Selection Color */
 ::selection {
-  background-color: var(--blue-600);
+  background-color: var(--accent-primary);
   color: white;
 }
 
 /* Placeholder Color */
 ::placeholder {
-  color: var(--slate-400);
+  color: var(--text-muted);
+}
+
+/* Form Elements */
+input, select, textarea {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-primary);
+  color: var(--text-primary);
+  transition: all 0.3s ease;
+}
+
+input:focus, select:focus, textarea:focus {
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
 }
 
 /* Responsive Design */
@@ -639,39 +671,30 @@ button {
   }
 }
 
-/* Utility Classes for Professional Theme */
-.bg-slate-900 { background-color: var(--slate-900); }
-.bg-slate-800 { background-color: var(--slate-800); }
-.bg-slate-700 { background-color: var(--slate-700); }
-.bg-slate-600 { background-color: var(--slate-600); }
+/* Utility Classes */
+.bg-primary { background-color: var(--bg-primary); }
+.bg-secondary { background-color: var(--bg-secondary); }
+.bg-card { background-color: var(--bg-card); }
 
-.text-white { color: white; }
-.text-slate-300 { color: var(--slate-300); }
-.text-slate-400 { color: var(--slate-400); }
-.text-blue-400 { color: var(--blue-400); }
-.text-blue-500 { color: var(--blue-500); }
+.text-primary { color: var(--text-primary); }
+.text-secondary { color: var(--text-secondary); }
+.text-muted { color: var(--text-muted); }
 
-.border-slate-700 { border-color: var(--slate-700); }
-.border-blue-400 { border-color: var(--blue-400); }
-.border-blue-500 { border-color: var(--blue-500); }
-.border-blue-600 { border-color: var(--blue-600); }
+.border-primary { border-color: var(--border-primary); }
+.border-secondary { border-color: var(--border-secondary); }
 
-.bg-blue-600 { background-color: var(--blue-600); }
-.bg-blue-500 { background-color: var(--blue-500); }
-.bg-blue-400 { background-color: var(--blue-400); }
-
-.hover\:bg-blue-700:hover { background-color: var(--blue-700); }
-.hover\:bg-blue-600:hover { background-color: var(--blue-600); }
-.hover\:bg-blue-500:hover { background-color: var(--blue-500); }
+.bg-accent { background-color: var(--accent-primary); }
+.text-accent { color: var(--accent-primary); }
+.border-accent { border-color: var(--accent-primary); }
 
 /* Professional gradient backgrounds */
 .bg-gradient-professional {
-  background: linear-gradient(135deg, var(--slate-900) 0%, var(--blue-900) 50%, var(--slate-800) 100%);
+  background: linear-gradient(135deg, var(--bg-primary) 0%, var(--accent-secondary) 50%, var(--bg-secondary) 100%);
 }
 
 .bg-gradient-card {
-  background: linear-gradient(135deg, var(--slate-800), var(--slate-700));
-  border: 1px solid var(--slate-600);
+  background: linear-gradient(135deg, var(--bg-card), var(--bg-secondary));
+  border: 1px solid var(--border-primary);
 }
 
 /* Glass morphism effect */
@@ -684,4 +707,9 @@ button {
 .light .glass {
   background: rgba(255, 255, 255, 0.8);
   border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+/* Theme transition */
+* {
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
 }
