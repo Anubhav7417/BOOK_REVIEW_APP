@@ -137,6 +137,7 @@ class BookHubApp extends Component {
   componentDidMount() {
     this.initializeDefaultAdmin();
     this.initializeTheme();
+    this.initializeParticles();
     this.loadSampleData();
     this.setupEventListeners();
     this.checkAccountLock();
@@ -1874,6 +1875,43 @@ class BookHubApp extends Component {
   }
 
   // Utility Methods
+  initializeParticles = () => {
+    const container = document.getElementById('particles-container');
+    if (!container) return;
+    
+    const particleCount = 30;
+    
+    for (let i = 0; i < particleCount; i++) {
+      const particle = document.createElement('div');
+      particle.className = 'particle animate-particle-float';
+      
+      const size = Math.random() * 4 + 1;
+      const tx = (Math.random() - 0.5) * 200;
+      const ty = (Math.random() - 0.5) * 200;
+      const colors = [
+        'rgba(37, 99, 235, 0.3)',
+        'rgba(6, 182, 212, 0.3)',
+        'rgba(16, 185, 129, 0.3)',
+        'rgba(245, 158, 11, 0.3)'
+      ];
+      const color = colors[Math.floor(Math.random() * colors.length)];
+      
+      particle.style.cssText = `
+        width: ${size}px;
+        height: ${size}px;
+        background: ${color};
+        left: ${Math.random() * 100}%;
+        top: ${Math.random() * 100}%;
+        --tx: ${tx}vw;
+        --ty: ${ty}vh;
+        animation-duration: ${Math.random() * 15 + 10}s;
+        animation-delay: ${Math.random() * 5}s;
+      `;
+      
+      container.appendChild(particle);
+    }
+  }
+
   setupEventListeners = () => {
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') {
@@ -2141,8 +2179,8 @@ class BookHubApp extends Component {
         {/* Progress Modal */}
         {this.renderProgressModal()}
 
-        {/* REMOVED: Particles container and grid-bg */}
-        <div className="fixed inset-0 z-0 bg-gradient-to-br from-blue-900 via-blue-800 to-blue-700"></div>
+        <div className="fixed inset-0 z-0 grid-bg"></div>
+        <div id="particles-container" className="fixed inset-0 z-0"></div>
 
         {/* Mobile Menu */}
         {this.renderMobileMenu()}
