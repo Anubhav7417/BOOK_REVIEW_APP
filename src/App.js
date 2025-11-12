@@ -648,11 +648,11 @@ class BookHubApp extends Component {
 
   updateBookProgress = (e) => {
     e.preventDefault();
-    const { activeBook, progressData, userLibrary } = this.state;
+    const { activeBook, progressData } = this.state;
     
     if (!activeBook) return;
 
-    const updatedLibrary = userLibrary.map(book => {
+    const updatedLibrary = this.state.userLibrary.map(book => {
       if (book.id === activeBook.id) {
         const progressPercentage = progressData.currentPage > 0 ? 
           Math.min(100, Math.round((progressData.currentPage / book.pages) * 100)) : 0;
@@ -1581,7 +1581,7 @@ class BookHubApp extends Component {
 
   // UPDATED: Render User Library with Filter and Sort
   renderUserLibrary = () => {
-    const { currentUser, userReviews, libraryFilter, librarySort } = this.state;
+    const { currentUser, userReviews } = this.state;
     
     if (!currentUser) {
       return (
@@ -2005,7 +2005,7 @@ class BookHubApp extends Component {
                   <input type="checkbox" className="rounded border-gray-300 text-primary-600 focus:ring-primary-500" />
                   <span className="ml-2 text-sm">Remember me</span>
                 </label>
-                <a href="#" className="text-sm text-primary-400 hover:underline">Forgot password?</a>
+                <button type="button" className="text-sm text-primary-400 hover:underline">Forgot password?</button>
               </div>
               <button type="submit" className="w-full py-3 bg-primary-600 text-white font-semibold rounded-lg hover:bg-primary-700 transition-all duration-300 transform hover:scale-105">
                 Let's Go!!!
@@ -2150,7 +2150,7 @@ class BookHubApp extends Component {
   }
 
   render() {
-    const { currentUser, showBookModal, showReviewModal, showProgressModal, activeBook, activeGenre, isMobileMenuOpen, showSearchResults, libraryFilter, librarySort } = this.state;
+    const { currentUser, showBookModal, activeBook, activeGenre, isMobileMenuOpen, showSearchResults } = this.state;
 
     return (
       <div className="App">
@@ -2302,7 +2302,7 @@ class BookHubApp extends Component {
               {/* Filter Dropdown */}
               <div className="relative">
                 <select 
-                  value={libraryFilter}
+                  value={this.state.libraryFilter}
                   onChange={(e) => this.handleLibraryFilter(e.target.value)}
                   className="px-6 py-3 bg-dark border border-primary-600 text-primary-600 font-semibold rounded-lg hover:bg-primary-600 hover:text-white transition-all duration-300 appearance-none pr-10"
                 >
@@ -2319,7 +2319,7 @@ class BookHubApp extends Component {
               {/* Sort Dropdown */}
               <div className="relative">
                 <select 
-                  value={librarySort}
+                  value={this.state.librarySort}
                   onChange={(e) => this.handleLibrarySort(e.target.value)}
                   className="px-6 py-3 bg-dark border border-accent text-accent font-semibold rounded-lg hover:bg-accent hover:text-white transition-all duration-300 appearance-none pr-10"
                 >
