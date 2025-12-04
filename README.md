@@ -19,27 +19,19 @@ A modern, feature-rich **Digital Library & Social Reading Platform** built with 
 * 📖 **Book Discovery** – Search & browse millions of books
 * 📚 **Digital Library** – Personal bookshelf + progress tracking
 * ⭐ **Smart Reviews** – Ratings + detailed review system
-* 👥 **Social Reading** – View community reviews & activity
-* 🌐 **Multi-format Support** – PDFs, text, multi-language options
 
 ---
 
 ## 🔧 **Technical Features**
 
 * 🔍 **Google Books API Search**
-* 📊 **Reading Progress Visualization**
-* 🧹 **Filter & Sort Tools** (author/title/status/progress)
 * 📱 **Fully Responsive UI**
-* 🌙 **Light/Dark Theme Toggle**
 
 ---
 
 ## 🛡️ **Security Features**
 
 * 🔐 **Encrypted password hashing**
-* ⏳ **Session timeout** (auto logout after 30 mins)
-* 🚫 **Brute-force attack protection**
-* 🧼 **Input sanitization & XSS protection**
 * 🔒 **Encrypted local storage**
 
 ---
@@ -109,8 +101,6 @@ Admin capabilities:
 
 ---
 
-## 🧩 **Key Components**
-
 ### 📚 **Book Management**
 
 * One-click **Add to Library**
@@ -120,8 +110,6 @@ Admin capabilities:
 ### ⭐ **Review System**
 
 * 1–5 star rating slider
-* Detailed written reviews
-* Community likes & shares
 
 ### 🔍 **Search & Discovery**
 
@@ -147,8 +135,6 @@ const searchBooks = async (query) => {
 ## 🔒 **Security Implementations**
 
 ### Authentication
-
-* Hashed & encrypted passwords
 * 30-minute session timeout
 * Lock account after 5 wrong login attempts
 
@@ -183,7 +169,6 @@ Built mobile-first with:
 
 ## 🧹 **Code Style**
 
-* ES6+ syntax
 * Component-based structure
 * Clean naming & reusable components
 
