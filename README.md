@@ -223,9 +223,6 @@ Licensed under the **MIT License**.
 ---
 
 ## 📞 **Support**
-
-* 📘 Documentation: Project Wiki
-* 🐛 Issues: GitHub Issues
 * 📧 Email: **[jonsnower07@gmail.com](mailto:jonsnower07@gmail.com)**
 
 ---
