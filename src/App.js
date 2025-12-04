@@ -179,6 +179,18 @@ function App() {
     setSearchResults(DEMO_BOOKS);
   };
 
+  // FIXED: Start Exploring function
+  const startExploring = () => {
+    // Set active tab to discover if not already
+    setActiveTab("discover");
+    
+    // Load demo books
+    setSearchResults(DEMO_BOOKS);
+    
+    // Also search for popular books online
+    searchBooks("best sellers 2024");
+  };
+
   // Library Operations
   const addToLibrary = (book) => {
     if (library.some(b => b.id === book.id)) {
@@ -221,7 +233,7 @@ function App() {
     alert("Your custom book has been added to the library!");
   };
 
-  // Review Functions - FIXED AND WORKING
+  // Review Functions - FIXED
   const submitReview = (bookId) => {
     if (!currentUser) {
       alert("Please login to submit a review");
@@ -250,6 +262,7 @@ function App() {
       return { ...prev, [bookId]: [...bookReviews, review] };
     });
     
+    // Reset newReview for this book
     setNewReview({ text: "", rating: 5 });
     alert("Thank you for your review!");
   };
@@ -263,7 +276,9 @@ function App() {
     
     const reviewText = prompt("Write your review:");
     if (reviewText && reviewText.trim()) {
-      const rating = prompt("Rating (1-5):", "5");
+      const ratingInput = prompt("Rating (1-5):", "5");
+      const rating = Math.min(5, Math.max(1, parseInt(ratingInput) || 5));
+      
       const review = {
         id: generateId(),
         bookId,
@@ -271,7 +286,7 @@ function App() {
         username: currentUser.username,
         avatar: currentUser.avatar || currentUser.username.charAt(0).toUpperCase(),
         text: reviewText,
-        rating: parseInt(rating) || 5,
+        rating: rating,
         date: new Date().toISOString()
       };
       
@@ -283,6 +298,13 @@ function App() {
       alert("Review added!");
     }
   };
+
+  // Reset review when opening book modal
+  useEffect(() => {
+    if (activeModal === "book" && modalData.book) {
+      setNewReview({ text: "", rating: 5 });
+    }
+  }, [activeModal, modalData.book]);
 
   // Authentication
   const handleLogin = async (email, password, captchaAnswer) => {
@@ -451,10 +473,18 @@ function App() {
       <form onSubmit={(e) => {
         e.preventDefault();
         const formData = new FormData(e.target);
+        const password = formData.get("password");
+        const confirmPassword = formData.get("confirmPassword");
+        
+        if (password !== confirmPassword) {
+          alert("Passwords don't match!");
+          return;
+        }
+        
         handleRegister({
           username: formData.get("username"),
           email: formData.get("email"),
-          password: formData.get("password"),
+          password: password,
           captchaAnswer: formData.get("captcha")
         });
       }}>
@@ -588,7 +618,7 @@ function App() {
           </p>
         </div>
         
-        {/* Reviews Section - WORKING */}
+        {/* Reviews Section - FIXED */}
         <div className="reviews-section">
           <h3 className="section-title">
             <span>💬</span>
@@ -629,7 +659,7 @@ function App() {
             </div>
           )}
           
-          {/* Add Review Form - WORKING */}
+          {/* Add Review Form - FIXED */}
           <div className="add-review-form">
             <h4>Share Your Thoughts</h4>
             <textarea
@@ -637,6 +667,7 @@ function App() {
               placeholder="What did you think of this book? Share your review..."
               value={newReview.text}
               onChange={(e) => setNewReview({ ...newReview, text: e.target.value })}
+              rows="4"
             />
             
             <div className="review-actions">
@@ -646,13 +677,14 @@ function App() {
                   <button
                     key={star}
                     type="button"
-                    className="star"
+                    className="star-btn"
                     style={{ 
                       background: "none", 
                       border: "none", 
                       fontSize: "24px", 
                       cursor: "pointer",
-                      color: star <= newReview.rating ? "#fbbf24" : "#e2e8f0"
+                      color: star <= newReview.rating ? "#fbbf24" : "#e2e8f0",
+                      padding: "0 4px"
                     }}
                     onClick={() => setNewReview({ ...newReview, rating: star })}
                   >
@@ -753,7 +785,7 @@ function App() {
         <div className="hero-actions">
           <button 
             className="btn btn-primary btn-lg"
-            onClick={() => document.querySelector(".search-input")?.focus()}
+            onClick={startExploring} {/* FIXED: Now calls startExploring function */}
           >
             <span>🔍</span>
             Start Exploring
