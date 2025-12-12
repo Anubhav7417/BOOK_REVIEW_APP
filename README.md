@@ -229,7 +229,7 @@ Licensed under the **MIT License**.
 
 <div align="center">
 
-### Made with ❤️ by Anubhav singh
+### Made with ❤️ by Team Neurix
 
 **Happy Reading! 📚**
 
